@@ -4,13 +4,13 @@ function Hero() {
       <div className="hero-content">
         <p className="eyebrow">Innovate. Compute. Build.</p>
         <h2>Department of CSE ,<span className="branch-title">(IoT,Cybersecurity including Blockchain Technology)</span></h2>
-        {/* <p>
+        <p>
           Welcome to a learning space focused on computing fundamentals,
           intelligent systems, creativity, and industry-ready problem solving.
         </p>
         <a className="primary-button" href="#about">
           Explore Department
-        </a> */}
+        </a>
         <h1>Coming Soon </h1>
       </div>
     </section>
