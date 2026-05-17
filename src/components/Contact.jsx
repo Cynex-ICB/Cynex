@@ -8,7 +8,7 @@ function Contact() {
 
       <div className="card contact-card">
         <div>
-          <h3>Department of CSE (ICB)</h3>
+          <h3>Department of CSE (IoT,Cybersecurity including Blockchain Technology)</h3>
           <p>Alva's Institute of Engineering and Technology</p>
           <p>Mijar, Moodbidri, Karnataka</p>
         </div>

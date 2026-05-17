@@ -21,6 +21,8 @@ body {
   background:
     linear-gradient(135deg, rgba(236, 244, 255, 0.9), rgba(250, 252, 248, 0.95)),
     #f7f9fb;
+  padding-bottom: 90px;
+
 }
 
 a {
@@ -378,11 +380,15 @@ a {
 }
 
 .footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 100%;
   text-align: center;
   padding: 1.4rem;
-  position: fixed;
-  bottom: 20px;
-  left: 35%;  
+
   color: #5a6d7e;
   background: #ffffff;
   border-top: 1px solid #e4ebf1;
