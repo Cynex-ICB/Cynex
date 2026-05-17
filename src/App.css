@@ -378,11 +378,12 @@ a {
 }
 
 .footer {
+  text-align: center;
   padding: 1.4rem;
   position: fixed;
   bottom: 20px;
+  left: 35%;  
   color: #5a6d7e;
-  text-align: center;
   background: #ffffff;
   border-top: 1px solid #e4ebf1;
 }
