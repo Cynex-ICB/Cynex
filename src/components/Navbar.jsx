@@ -5,7 +5,7 @@ const navLinks = [
   { label: 'Faculty', href: '#faculty' },
   { label: 'Achievements', href: '#achievements' },
   { label: 'Contact Us', href: '#contact' },
-  { label: 'Sections', href: '#about' },
+ 
 ];
 
 function Navbar() {
