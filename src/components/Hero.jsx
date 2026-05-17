@@ -9,9 +9,9 @@ function Hero() {
           intelligent systems, creativity, and industry-ready problem solving.
         </p>
         <a className="primary-button" href="#about">
-          Explore Department
+         Coming Soon
         </a>
-        <h1>Coming Soon </h1>
+        
       </div>
     </section>
   );
