@@ -14,8 +14,9 @@ function Navbar({ user, onLogout }) {
   const closeMenu = () => {
     setIsOpen(false);
   };
-  
 
+
+  
   return (
     <nav className="navbar">
       <a className="nav-brand" href="#home" onClick={closeMenu}>
