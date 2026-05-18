@@ -14,6 +14,7 @@ function Navbar({ user, onLogout }) {
   const closeMenu = () => {
     setIsOpen(false);
   };
+  
 
   return (
     <nav className="navbar">
