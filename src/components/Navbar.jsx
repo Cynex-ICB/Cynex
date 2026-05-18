@@ -8,7 +8,7 @@ const navLinks = [
  
 ];
 
-function Navbar() {
+function Navbar({ user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenu = () => {
@@ -18,7 +18,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <a className="nav-brand" href="#home" onClick={closeMenu}>
-        CSE (ICB)
+        CSE (IoT, Cybersecurity, including Blockchain Technology)
       </a>
 
       <button
@@ -41,6 +41,19 @@ function Navbar() {
             </a>
           </li>
         ))}
+        <li className="nav-session">
+          {user ? <span>{user.name}</span> : null}
+          <button
+            className="nav-logout"
+            type="button"
+            onClick={() => {
+              closeMenu();
+              onLogout?.();
+            }}
+          >
+            Logout
+          </button>
+        </li>
       </ul>
     </nav>
   );

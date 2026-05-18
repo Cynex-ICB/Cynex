@@ -9,7 +9,7 @@ function Hero() {
           intelligent systems, creativity, and industry-ready problem solving.
         </p>
         <a className="primary-button" href="#about">
-         Coming Soon
+         Explore Branch
         </a>
         
       </div>
