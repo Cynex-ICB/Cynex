@@ -463,9 +463,50 @@ a {
 .auth-layout {
   display: grid;
   grid-template-columns: minmax(0, 430px);
+  gap: 1rem;
   width: min(430px, 100%);
   margin: 0 auto;
   align-items: center;
+}
+
+.auth-welcome {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: #ffffff;
+}
+
+.auth-welcome-logo {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 24px rgba(16, 24, 40, 0.16);
+}
+
+.auth-welcome-logo img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.auth-welcome p {
+  margin: 0 0 0.2rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.auth-welcome h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  line-height: 1.15;
 }
 
 .auth-card {

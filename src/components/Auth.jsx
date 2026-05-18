@@ -189,17 +189,17 @@ function Auth({ onAuthenticated }) {
   return (
     <section className="section auth-section" id="login">
       <div className="auth-layout">
-        <form className="card auth-card" onSubmit={handleSubmit}>
-          <div className="auth-welcome">
-            <span className="auth-welcome-logo">
-              <img src={aietLogo} alt="AIET logo" />
-            </span>
-            <div>
-              <p>Welcome</p>
-              <h1>Access your account</h1>
-            </div>
+        <div className="auth-welcome">
+          <span className="auth-welcome-logo">
+            <img src={aietLogo} alt="AIET logo" />
+          </span>
+          <div>
+            <p>Welcome</p>
+            <h1>Access your account</h1>
           </div>
+        </div>
 
+        <form className="card auth-card" onSubmit={handleSubmit}>
           <div className="auth-form-heading">
             <p>{currentMode.eyebrow}</p>
             <h2>{currentMode.title}</h2>
