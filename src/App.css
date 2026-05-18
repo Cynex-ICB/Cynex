@@ -23,6 +23,11 @@
   box-sizing: border-box;
 }
 
+img,
+svg {
+  max-width: 100%;
+}
+
 html {
   overflow-x: hidden;
 }
@@ -34,17 +39,27 @@ body {
   background:
     linear-gradient(180deg, rgba(18, 35, 61, 0.04), rgba(244, 246, 248, 0.94) 340px),
     var(--color-surface);
-  padding-bottom: 90px;
-
-}
-
-body.auth-only {
   padding-bottom: 0;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+main,
+section,
+article,
+div,
+form,
+input,
+button,
+p,
+h1,
+h2,
+h3,
+h4 {
+  min-width: 0;
 }
 
 .branch-title {
@@ -141,9 +156,12 @@ a {
 }
 
 .nav-brand {
+  max-width: min(56vw, 540px);
+  overflow-wrap: anywhere;
   color: #ffffff;
   font-size: 1rem;
   font-weight: 800;
+  line-height: 1.25;
 }
 
 .nav-links {
@@ -325,6 +343,13 @@ a {
     transform 180ms ease;
 }
 
+.card h3,
+.card p,
+.section-heading h2,
+.contact-details a {
+  overflow-wrap: anywhere;
+}
+
 .card:hover {
   border-color: rgba(185, 130, 47, 0.42);
   box-shadow: var(--shadow-card-hover);
@@ -443,18 +468,17 @@ a {
 }
 
 .auth-section {
-  min-height: 100vh;
+  min-height: 100svh;
   display: grid;
   align-items: center;
-  padding-block: clamp(2rem, 5vw, 4.5rem);
+  padding: clamp(1rem, 4vw, 4.5rem) clamp(0.85rem, 4vw, 5rem);
   background:
-    linear-gradient(135deg, rgba(18, 35, 61, 0.96), rgba(28, 51, 86, 0.88) 52%, rgba(244, 246, 248, 0.98) 52%),
-    var(--color-surface);
+    linear-gradient(135deg, var(--color-navy) 0 50%, #ffffff 50% 100%);
   border-block: 0;
 }
 
 .auth-page {
-  min-height: 100vh;
+  min-height: 100svh;
   display: grid;
   align-items: center;
   padding-bottom: 0;
@@ -725,11 +749,6 @@ a {
 }
 
 .footer {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-
   width: 100%;
   text-align: center;
   padding: 1.4rem;
@@ -750,8 +769,7 @@ a {
 
   .auth-section {
     background:
-      linear-gradient(180deg, rgba(18, 35, 61, 0.08), rgba(244, 246, 248, 0.98) 320px),
-      var(--color-surface);
+      linear-gradient(135deg, var(--color-navy) 0 50%, #ffffff 50% 100%);
   }
 
   .contact-card {
@@ -762,9 +780,17 @@ a {
   .contact-details {
     width: 100%;
   }
+
+  .footer {
+    padding: 1.1rem 1rem;
+  }
 }
 
 @media (max-width: 720px) {
+  .card:hover {
+    transform: none;
+  }
+
   .site-header {
     grid-template-columns: 52px minmax(0, 1fr) 52px;
     align-items: center;
@@ -801,6 +827,11 @@ a {
     align-items: flex-start;
   }
 
+  .nav-brand {
+    max-width: calc(100% - 58px);
+    font-size: 0.92rem;
+  }
+
   .menu-toggle {
     display: block;
   }
@@ -830,6 +861,10 @@ a {
     border-radius: 8px;
   }
 
+  .nav-links li {
+    width: 100%;
+  }
+
   .nav-session {
     flex-direction: column;
     align-items: stretch;
@@ -854,6 +889,15 @@ a {
   .section {
     padding-top: 3.5rem;
     padding-bottom: 3.5rem;
+  }
+
+  .auth-section {
+    padding: 1rem;
+  }
+
+  .auth-card {
+    gap: 0.9rem;
+    padding: 1.15rem;
   }
 
   .achievement-card {
@@ -888,6 +932,54 @@ a {
     padding: 0.75rem 0.85rem;
   }
 
+  .menu-toggle {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+  }
+
+  .auth-layout {
+    width: 100%;
+  }
+
+  .auth-welcome {
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+
+  .auth-welcome-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+  }
+
+  .auth-welcome-logo img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .auth-welcome h1 {
+    font-size: 1.2rem;
+  }
+
+  .auth-form-heading h2 {
+    font-size: 1.45rem;
+  }
+
+  .auth-form-heading span {
+    font-size: 0.9rem;
+  }
+
+  .auth-card input {
+    min-height: 46px;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .auth-helper-row {
+    justify-content: flex-start;
+    line-height: 1.45;
+  }
+
   .hero-section {
     padding: 3.2rem 0.85rem;
   }
@@ -909,6 +1001,13 @@ a {
     padding: 3rem 0.85rem;
   }
 
+  .faculty-card,
+  .achievement-card,
+  .about-card,
+  .contact-card {
+    padding: 1rem;
+  }
+
   .about-card,
   .contact-card,
   .faculty-card,
@@ -918,6 +1017,11 @@ a {
 
   .contact-details a {
     width: 100%;
+  }
+
+  .footer {
+    font-size: 0.86rem;
+    line-height: 1.45;
   }
 }
 
@@ -947,7 +1051,7 @@ a {
   }
 
   .nav-brand {
-    font-size: 0.92rem;
+    font-size: 0.82rem;
   }
 
   .hero-content h2 {
@@ -956,5 +1060,22 @@ a {
 
   .branch-title {
     font-size: 1.18rem;
+  }
+
+  .auth-section {
+    padding: 0.7rem;
+  }
+
+  .auth-card {
+    padding: 0.95rem;
+  }
+
+  .auth-welcome h1 {
+    font-size: 1.05rem;
+  }
+
+  .auth-switch,
+  .auth-helper-row {
+    font-size: 0.86rem;
   }
 }

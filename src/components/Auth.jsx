@@ -14,7 +14,6 @@ const modeDetails = {
   login: {
     eyebrow: "Welcome back",
     title: "Login to your portal",
-    note: "Use your registered email and password to continue.",
   },
   signup: {
     eyebrow: "New account",
@@ -194,8 +193,8 @@ function Auth({ onAuthenticated }) {
             <img src={aietLogo} alt="AIET logo" />
           </span>
           <div>
-            <p>Welcome</p>
-            <h1>Access your account</h1>
+            <p>Welcome to</p>
+            <h1>Department of CSE(IoT, Cybersecurity,including Blockchain Technology)</h1>
           </div>
         </div>
 
