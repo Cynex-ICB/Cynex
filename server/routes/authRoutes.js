@@ -1,6 +1,8 @@
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import express from "express";
 import jwt from "jsonwebtoken";
+import SignupOtp from "../models/SignupOtp.js";
 import User from "../models/User.js";
 import protect from "../middleware/authMiddleware.js";
 import sendEmail from "../utils/sendEmail.js";
@@ -38,6 +40,18 @@ function sendAuthResponse(res, user, statusCode = 200) {
   });
 }
 
+function hashValue(value) {
+  return crypto.createHash("sha256").update(value).digest("hex");
+}
+
+function createOtp() {
+  return String(crypto.randomInt(100000, 1000000));
+}
+
+function isDepartmentStudentEmail(email) {
+  return /^4al\d{2}ic\d{3}@aiet\.org\.in$/i.test(email);
+}
+
 router.post("/signup", async (req, res) => {
   try {
     const { name, collegeEmail, password, usn, semester } = req.body;
@@ -46,9 +60,9 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ message: "Name, college email, and password are required." });
     }
 
-    if (!/^[0-9A-Z]+@aiet\.org\.in$/i.test(collegeEmail)) {
+    if (!isDepartmentStudentEmail(collegeEmail)) {
       return res.status(400).json({ 
-        message: "College email must be in AIET format (e.g., 4AL23CS001@aiet.org.in)" 
+        message: "Use your department email format: 4ALxxICxxx@aiet.org.in." 
       });
     }
 
@@ -69,23 +83,89 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ message: "USN and semester are required for student signup." });
     }
 
-    const userData = {
+    const otp = createOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const pendingSignup = {
       name,
       collegeEmail: normalizedEmail,
-      password,
+      passwordHash: await bcrypt.hash(password, 12),
+      otpHash: hashValue(otp),
       role,
+      expiresAt,
     };
 
     // Add student-specific fields if not admin
     if (role === "student") {
-      userData.usn = usn ? usn.trim().toUpperCase() : "";
-      userData.semester = semesterNumber;
+      pendingSignup.usn = usn ? usn.trim().toUpperCase() : "";
+      pendingSignup.semester = semesterNumber;
     }
 
-    const user = await User.create(userData);
-    return sendAuthResponse(res, user, 201);
+    await SignupOtp.findOneAndUpdate(
+      { collegeEmail: normalizedEmail },
+      pendingSignup,
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    await sendEmail({
+      to: normalizedEmail,
+      subject: "Verify your CSE (ICB) portal account",
+      text: `Your verification OTP is ${otp}. It expires in 10 minutes.`,
+      html: `
+        <p>Hello ${name},</p>
+        <p>Your verification OTP is:</p>
+        <h2>${otp}</h2>
+        <p>This OTP expires in 10 minutes.</p>
+      `,
+    });
+
+    return res.status(200).json({
+      message: "OTP sent to your college email. Enter it to complete signup.",
+      requiresOtp: true,
+      collegeEmail: normalizedEmail,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Signup failed." });
+  }
+});
+
+router.post("/verify-signup", async (req, res) => {
+  try {
+    const { collegeEmail, otp } = req.body;
+
+    if (!collegeEmail || !otp) {
+      return res.status(400).json({ message: "College email and OTP are required." });
+    }
+
+    const normalizedEmail = collegeEmail.toLowerCase().trim();
+    const pendingSignup = await SignupOtp.findOne({ collegeEmail: normalizedEmail });
+
+    if (!pendingSignup || pendingSignup.expiresAt < new Date()) {
+      return res.status(400).json({ message: "OTP is invalid or expired. Please signup again." });
+    }
+
+    if (pendingSignup.otpHash !== hashValue(String(otp).trim())) {
+      return res.status(400).json({ message: "Invalid OTP." });
+    }
+
+    const existingUser = await User.findOne({ collegeEmail: normalizedEmail });
+    if (existingUser) {
+      await pendingSignup.deleteOne();
+      return res.status(409).json({ message: "An account with this college email already exists." });
+    }
+
+    const user = await User.create({
+      name: pendingSignup.name,
+      collegeEmail: pendingSignup.collegeEmail,
+      password: pendingSignup.passwordHash,
+      role: pendingSignup.role,
+      usn: pendingSignup.usn,
+      semester: pendingSignup.semester,
+    });
+
+    await pendingSignup.deleteOne();
+    return sendAuthResponse(res, user, 201);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "OTP verification failed." });
   }
 });
 
@@ -126,7 +206,7 @@ router.post("/forgot-password", async (req, res) => {
 
     if (user) {
       const resetToken = crypto.randomBytes(32).toString("hex");
-      const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+      const hashedToken = hashValue(resetToken);
 
       user.passwordResetToken = hashedToken;
       user.passwordResetExpires = Date.now() + 60 * 60 * 1000;
@@ -164,7 +244,7 @@ router.post("/reset-password/:token", async (req, res) => {
       return res.status(400).json({ message: "Password must be at least 8 characters." });
     }
 
-    const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+    const hashedToken = hashValue(req.params.token);
     const user = await User.findOne({
       passwordResetToken: hashedToken,
       passwordResetExpires: { $gt: Date.now() },

@@ -11,6 +11,7 @@ const initialFields = {
   newPassword: "",
   usn: "",
   semester: "1",
+  otp: "",
 };
 
 const modeDetails = {
@@ -50,6 +51,7 @@ function Auth({ onAuthenticated }) {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignupOtpPending, setIsSignupOtpPending] = useState(false);
 
   const resetToken = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -92,6 +94,7 @@ function Auth({ onAuthenticated }) {
 
     navigate(nextPath);
     setMode(nextMode);
+    setIsSignupOtpPending(false);
     setFields(initialFields);
     clearMessages();
   };
@@ -120,7 +123,7 @@ function Auth({ onAuthenticated }) {
     setIsLoading(true);
 
     try {
-      if (mode === "signup") {
+      if (mode === "signup" && !isSignupOtpPending) {
         const data = await callApi("/auth/signup", {
           method: "POST",
           body: JSON.stringify({
@@ -131,8 +134,21 @@ function Auth({ onAuthenticated }) {
             semester: fields.semester,
           }),
         });
+        setIsSignupOtpPending(true);
+        setStatus(data.message || "OTP sent to your college email.");
+        return;
+      }
+
+      if (mode === "signup" && isSignupOtpPending) {
+        const data = await callApi("/auth/verify-signup", {
+          method: "POST",
+          body: JSON.stringify({
+            collegeEmail: fields.collegeEmail,
+            otp: fields.otp,
+          }),
+        });
         saveSession(data);
-        setStatus("Account created successfully.");
+        setStatus("Account verified successfully.");
       }
 
       if (mode === "login") {
@@ -165,6 +181,7 @@ function Auth({ onAuthenticated }) {
       }
 
       setFields(initialFields);
+      setIsSignupOtpPending(false);
     } catch (apiError) {
       setError(apiError.message);
     } finally {
@@ -172,16 +189,24 @@ function Auth({ onAuthenticated }) {
     }
   };
 
-  const showName = mode === "signup";
-  const showPassword = mode === "login" || mode === "signup";
+  const showName = mode === "signup" && !isSignupOtpPending;
+  const showPassword = mode === "login" || (mode === "signup" && !isSignupOtpPending);
   const showEmail = mode !== "reset" || !resetToken;
   const showNewPassword = mode === "reset" && resetToken;
+  const showSignupDetails = mode === "signup" && !isSignupOtpPending;
+  const showSignupOtp = mode === "signup" && isSignupOtpPending;
   const submitLabel = {
     login: "Log In",
-    signup: "Create Account",
+    signup: isSignupOtpPending ? "Verify OTP" : "Send OTP",
     reset: resetToken ? "Reset Password" : "Send Reset Link",
   }[mode];
-  const currentMode = modeDetails[mode];
+  const currentMode = isSignupOtpPending
+    ? {
+        eyebrow: "Verify email",
+        title: "Enter your OTP",
+        note: "We sent a 6-digit code to your college email.",
+      }
+    : modeDetails[mode];
 
   return (
     <section className="section auth-section" id="login">
@@ -218,19 +243,43 @@ function Auth({ onAuthenticated }) {
             </label>
           ) : null}
 
-          {showEmail ? (
+          {showEmail && !showSignupOtp ? (
             <label className="auth-field">
               <span>College Email</span>
               <input
                 name="collegeEmail"
                 type="email"
-                placeholder="4AL23CS001@aiet.org.in"
+                placeholder="4AL23IC044@aiet.org.in"
                 value={fields.collegeEmail}
                 onChange={updateField}
-                pattern="^[0-9A-Za-z]+@aiet\.org\.in$"
+                pattern="^4[aA][lL][0-9]{2}[iI][cC][0-9]{3}@aiet\.org\.in$"
+                title="Use your department email format: 4ALxxICxxx@aiet.org.in"
                 required
               />
             </label>
+          ) : null}
+
+          {showSignupOtp ? (
+            <>
+              <label className="auth-field">
+                <span>College Email</span>
+                <input name="collegeEmail" type="email" value={fields.collegeEmail} readOnly />
+              </label>
+
+              <label className="auth-field">
+                <span>Email OTP</span>
+                <input
+                  name="otp"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  placeholder="Enter 6-digit OTP"
+                  value={fields.otp}
+                  onChange={updateField}
+                  required
+                />
+              </label>
+            </>
           ) : null}
 
           {showPassword ? (
@@ -248,7 +297,7 @@ function Auth({ onAuthenticated }) {
             </label>
           ) : null}
 
-          {mode === "signup" ? (
+          {showSignupDetails ? (
             <>
               <label className="auth-field">
                 <span>USN</span>
@@ -283,7 +332,7 @@ function Auth({ onAuthenticated }) {
             </>
           ) : null}
 
-          {mode === "login" || mode === "signup" ? (
+          {mode === "login" || showSignupDetails ? (
             <p className="auth-helper-row">
               <span>Forgot your password?</span>
               <button type="button" onClick={() => goToMode("reset")}>
@@ -325,10 +374,28 @@ function Auth({ onAuthenticated }) {
 
           {mode === "signup" ? (
             <p className="auth-switch">
-              Already registered?{" "}
-              <button type="button" onClick={() => goToMode("login")}>
-                Login instead
-              </button>
+              {isSignupOtpPending ? (
+                <>
+                  Need to edit details?{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSignupOtpPending(false);
+                      setFields((currentFields) => ({ ...currentFields, otp: "" }));
+                      clearMessages();
+                    }}
+                  >
+                    Go back
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already registered?{" "}
+                  <button type="button" onClick={() => goToMode("login")}>
+                    Login instead
+                  </button>
+                </>
+              )}
             </p>
           ) : null}
 

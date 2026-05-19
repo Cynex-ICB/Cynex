@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^[0-9A-Z]+@aiet\.org\.in$/i, "Please use a valid AIET email (e.g., 4AL23CS001@aiet.org.in)"],
+      match: [/^4al\d{2}ic\d{3}@aiet\.org\.in$/i, "Please use a valid department email (e.g., 4AL23IC044@aiet.org.in)"],
     },
     usn: {
       type: String,
@@ -54,6 +54,10 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre("save", async function hashPassword() {
   if (!this.isModified("password")) {
+    return;
+  }
+
+  if (/^\$2[aby]\$\d{2}\$/.test(this.password)) {
     return;
   }
 
