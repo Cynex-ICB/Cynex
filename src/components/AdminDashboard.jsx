@@ -30,7 +30,6 @@ const initialContentForm = {
   name: "",
   roleTitle: "",
   ctcLpa: "",
-  imageUrl: "",
   link: "",
 };
 
@@ -349,10 +348,12 @@ function ShowcaseContentPage({ token }) {
 
 function ContentManager({ token, fixedType, allowTypeChoice = false, eyebrow, title, description }) {
   const [form, setForm] = useState(() => ({ ...initialContentForm, type: fixedType || "achievement" }));
+  const [selectedImage, setSelectedImage] = useState(null);
   const [posts, setPosts] = useState([]);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const imageInputRef = useRef(null);
   const authHeaders = getAuthHeaders(token);
   const visibleTypes = fixedType ? [fixedType] : ["achievement", "placement", "internship"];
 
@@ -386,19 +387,27 @@ function ContentManager({ token, fixedType, allowTypeChoice = false, eyebrow, ti
     setIsLoading(true);
 
     try {
+      const formData = new FormData();
+      Object.entries({ ...form, type: fixedType || form.type }).forEach(([key, value]) => {
+        if (value) formData.append(key, value);
+      });
+
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+
       const data = await readJson(
         await fetch(`${API_BASE_URL}/content`, {
           method: "POST",
-          headers: {
-            ...authHeaders,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ...form, type: fixedType || form.type }),
+          headers: authHeaders,
+          body: formData,
         })
       );
 
       setPosts((currentPosts) => [data.post, ...currentPosts]);
       setForm({ ...initialContentForm, type: fixedType || "achievement" });
+      setSelectedImage(null);
+      if (imageInputRef.current) imageInputRef.current.value = "";
       setStatus("Content published.");
     } catch (submitError) {
       setError(submitError.message);
@@ -505,16 +514,21 @@ function ContentManager({ token, fixedType, allowTypeChoice = false, eyebrow, ti
           </>
         ) : null}
 
-        <label>
-          Image URL
-          <input
-            name="imageUrl"
-            type="url"
-            value={form.imageUrl}
-            onChange={updateField}
-            placeholder="[image]"
-          />
-        </label>
+        {form.type === "placement" || form.type === "internship" ? (
+          <label>
+            Upload image
+            <input
+              ref={imageInputRef}
+              name="image"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(event) => setSelectedImage(event.target.files?.[0] || null)}
+            />
+            <span className="admin-file-hint">
+              {selectedImage ? selectedImage.name : "Allowed formats: JPG, PNG, WEBP up to 5 MB."}
+            </span>
+          </label>
+        ) : null}
 
         <label>
           Link
@@ -781,6 +795,7 @@ function ContentList({ eyebrow, title, items, getTypeLabel, onDelete }) {
               {item.name ? <small>Name: {item.name}</small> : null}
               {item.roleTitle ? <small>Role: {item.roleTitle}</small> : null}
               {item.ctcLpa ? <small>CTC/LPA: {item.ctcLpa}</small> : null}
+              {item.image?.originalName ? <small>Image: {item.image.originalName}</small> : null}
               {item.description ? <p>{item.description}</p> : null}
               {item.dueDate ? <small>Due: {new Date(item.dueDate).toLocaleDateString()}</small> : null}
               {item.link ? (

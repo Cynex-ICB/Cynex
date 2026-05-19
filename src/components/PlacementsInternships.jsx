@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "https://cynex-portal-backend.vercel.app/api";
+const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
 const placeholderPlacements = [
   {
@@ -71,6 +72,11 @@ function PlacementsInternships({ token }) {
 }
 
 function ShowcaseSection({ title, items }) {
+  const getImageSrc = (imageUrl) => {
+    if (!imageUrl) return "";
+    return imageUrl.startsWith("/uploads") ? `${API_ORIGIN}${imageUrl}` : imageUrl;
+  };
+
   return (
     <div className="showcase-section">
       <h3>{title}</h3>
@@ -78,7 +84,11 @@ function ShowcaseSection({ title, items }) {
         {items.map((item) => (
           <article className="card showcase-card" key={item._id || item.title}>
             <div className="showcase-image">
-              {item.imageUrl ? <img src={item.imageUrl} alt={item.name || item.title} /> : <span>[image]</span>}
+              {item.imageUrl ? (
+                <img src={getImageSrc(item.imageUrl)} alt={item.name || item.title} />
+              ) : (
+                <span>[image]</span>
+              )}
             </div>
             <div className="showcase-content">
               <p className="eyebrow">{item.title}</p>
