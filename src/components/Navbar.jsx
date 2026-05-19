@@ -1,10 +1,13 @@
+import { Link, NavLink } from 'react-router-dom';
 import { useState } from 'react';
 
 const navLinks = [
-  { label: 'Home', href: '#home' },
-  { label: 'Faculty', href: '#faculty' },
-  { label: 'Achievements', href: '#achievements' },
-  { label: 'Contact Us', href: '#contact' },
+  { label: 'Home', to: '/' },
+  { label: 'Faculty', to: '/faculty' },
+  { label: 'Achievements', to: '/achievements' },
+  { label: 'Placements', to: '/placements-internships' },
+  { label: 'Materials', to: '/materials' },
+  { label: 'Contact Us', to: '/contact' },
  
 ];
 
@@ -19,9 +22,9 @@ function Navbar({ user, onLogout }) {
   
   return (
     <nav className="navbar">
-      <a className="nav-brand" href="#home" onClick={closeMenu}>
+      <Link className="nav-brand" to="/" onClick={closeMenu}>
         CSE (IoT, Cybersecurity, including Blockchain Technology)
-      </a>
+      </Link>
 
       <button
         className="menu-toggle"
@@ -38,11 +41,23 @@ function Navbar({ user, onLogout }) {
       <ul className={`nav-links ${isOpen ? 'show' : ''}`}>
         {navLinks.map((link) => (
           <li key={link.label}>
-            <a href={link.href} onClick={closeMenu}>
+            <NavLink
+              to={link.to}
+              onClick={closeMenu}
+              className={({ isActive }) => (isActive ? 'active' : undefined)}
+              end={link.to === '/'}
+            >
               {link.label}
-            </a>
+            </NavLink>
           </li>
         ))}
+        {user?.role === 'admin' ? (
+          <li>
+            <NavLink className="admin-nav-link" to="/admin" onClick={closeMenu}>
+              Admin Dashboard
+            </NavLink>
+          </li>
+        ) : null}
         <li className="nav-session">
           {user ? <span>{user.name}</span> : null}
           <button

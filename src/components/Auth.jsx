@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import aietLogo from "../assets/aiet-logo.png";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const initialFields = {
   name: "",
-  email: "",
+  collegeEmail: "",
   password: "",
   newPassword: "",
+  usn: "",
+  semester: "1",
 };
 
 const modeDetails = {
@@ -27,12 +30,12 @@ const modeDetails = {
   },
 };
 
-function getModeFromPath() {
-  if (window.location.pathname === "/signup") {
+function getModeFromPath(pathname) {
+  if (pathname === "/signup") {
     return "signup";
   }
 
-  if (window.location.pathname === "/reset") {
+  if (pathname === "/reset") {
     return "reset";
   }
 
@@ -40,16 +43,18 @@ function getModeFromPath() {
 }
 
 function Auth({ onAuthenticated }) {
-  const [mode, setMode] = useState(getModeFromPath);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [mode, setMode] = useState(() => getModeFromPath(location.pathname));
   const [fields, setFields] = useState(initialFields);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const resetToken = useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     return params.get("resetToken");
-  }, []);
+  }, [location.search]);
 
   useEffect(() => {
     if (resetToken) {
@@ -58,17 +63,9 @@ function Auth({ onAuthenticated }) {
   }, [resetToken]);
 
   useEffect(() => {
-    const syncModeWithPath = () => {
-      setMode(getModeFromPath());
-      clearMessages();
-    };
-
-    window.addEventListener("popstate", syncModeWithPath);
-
-    return () => {
-      window.removeEventListener("popstate", syncModeWithPath);
-    };
-  }, []);
+    setMode(getModeFromPath(location.pathname));
+    clearMessages();
+  }, [location.pathname]);
 
   const updateField = (event) => {
     const { name, value } = event.target;
@@ -93,7 +90,7 @@ function Auth({ onAuthenticated }) {
       reset: "/reset",
     }[nextMode];
 
-    window.history.pushState({}, document.title, nextPath);
+    navigate(nextPath);
     setMode(nextMode);
     setFields(initialFields);
     clearMessages();
@@ -128,8 +125,10 @@ function Auth({ onAuthenticated }) {
           method: "POST",
           body: JSON.stringify({
             name: fields.name,
-            email: fields.email,
+            collegeEmail: fields.collegeEmail,
             password: fields.password,
+            usn: fields.usn,
+            semester: fields.semester,
           }),
         });
         saveSession(data);
@@ -140,7 +139,7 @@ function Auth({ onAuthenticated }) {
         const data = await callApi("/auth/login", {
           method: "POST",
           body: JSON.stringify({
-            email: fields.email,
+            collegeEmail: fields.collegeEmail,
             password: fields.password,
           }),
         });
@@ -151,7 +150,7 @@ function Auth({ onAuthenticated }) {
       if (mode === "reset" && !resetToken) {
         const data = await callApi("/auth/forgot-password", {
           method: "POST",
-          body: JSON.stringify({ email: fields.email }),
+          body: JSON.stringify({ collegeEmail: fields.collegeEmail }),
         });
         setStatus(data.message);
       }
@@ -163,7 +162,6 @@ function Auth({ onAuthenticated }) {
         });
         saveSession(data);
         setStatus("Password reset successfully.");
-        window.history.replaceState({}, document.title, window.location.pathname);
       }
 
       setFields(initialFields);
@@ -222,13 +220,14 @@ function Auth({ onAuthenticated }) {
 
           {showEmail ? (
             <label className="auth-field">
-              <span>Email</span>
+              <span>College Email</span>
               <input
-                name="email"
+                name="collegeEmail"
                 type="email"
-                placeholder="name@example.com"
-                value={fields.email}
+                placeholder="4AL23CS001@aiet.org.in"
+                value={fields.collegeEmail}
                 onChange={updateField}
+                pattern="^[0-9A-Za-z]+@aiet\.org\.in$"
                 required
               />
             </label>
@@ -247,6 +246,41 @@ function Auth({ onAuthenticated }) {
                 required
               />
             </label>
+          ) : null}
+
+          {mode === "signup" ? (
+            <>
+              <label className="auth-field">
+                <span>USN</span>
+                <input
+                  name="usn"
+                  type="text"
+                  placeholder="1SE23CSxxx"
+                  value={fields.usn}
+                  onChange={updateField}
+                  required
+                />
+              </label>
+
+              <label className="auth-field">
+                <span>Semester</span>
+                <select
+                  name="semester"
+                  value={fields.semester}
+                  onChange={updateField}
+                  required
+                >
+                  <option value="1">1st Semester</option>
+                  <option value="2">2nd Semester</option>
+                  <option value="3">3rd Semester</option>
+                  <option value="4">4th Semester</option>
+                  <option value="5">5th Semester</option>
+                  <option value="6">6th Semester</option>
+                  <option value="7">7th Semester</option>
+                  <option value="8">8th Semester</option>
+                </select>
+              </label>
+            </>
           ) : null}
 
           {mode === "login" || mode === "signup" ? (

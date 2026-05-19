@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 function Hero() {
   return (
     <section className="hero-section" id="home">
@@ -8,9 +10,9 @@ function Hero() {
           Welcome to a learning space focused on computing fundamentals,
           intelligent systems, creativity, and industry-ready problem solving.
         </p>
-        <a className="primary-button" href="#about">
+        <Link className="primary-button" to="/faculty">
          Explore Branch
-        </a>
+        </Link>
         
       </div>
     </section>
