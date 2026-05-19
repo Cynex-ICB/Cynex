@@ -4,6 +4,10 @@ import { BrowserRouter } from 'react-router-dom';
 import './App.css';
 import App from './App.jsx';
 
+if (window.location.pathname === '/login') {
+  window.history.replaceState({}, '', '/');
+}
+
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>

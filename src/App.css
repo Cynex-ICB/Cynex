@@ -847,6 +847,12 @@ h4 {
   font-weight: 800;
 }
 
+.semester-lock-note {
+  margin: 0;
+  color: var(--color-slate);
+  font-weight: 850;
+}
+
 .showcase-section+.showcase-section {
   margin-top: 2.5rem;
 }

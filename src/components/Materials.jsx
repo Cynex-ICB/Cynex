@@ -15,19 +15,25 @@ function Materials({ token, user }) {
   const [subjects, setSubjects] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState(user?.semester || 1);
   const [isLoading, setIsLoading] = useState(true);
+  const isAdmin = user?.role === "admin";
+  const studentSemester = Number(user?.semester || 1);
 
   const authHeaders = {
     Authorization: `Bearer ${token}`,
   };
 
   useEffect(() => {
+    if (!isAdmin) {
+      setSelectedSemester(studentSemester);
+    }
     loadMaterials();
     loadSubjects();
-  }, [token]);
+  }, [token, studentSemester, isAdmin, selectedSemester]);
 
   const loadMaterials = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/materials`, {
+      const semesterQuery = isAdmin ? `?semester=${selectedSemester}` : "";
+      const response = await fetch(`${API_BASE_URL}/materials${semesterQuery}`, {
         headers: authHeaders,
       });
       const data = await response.json();
@@ -65,15 +71,14 @@ function Materials({ token, user }) {
   };
 
   // Get subjects for selected semester
-  const subjectsForSemester = subjects.filter(
-    (subject) => subject.semester === parseInt(selectedSemester)
-  );
+  const visibleSemester = isAdmin ? parseInt(selectedSemester) : studentSemester;
+  const subjectsForSemester = subjects.filter((subject) => subject.semester === visibleSemester);
 
   // Get general materials (notifications) for the semester
   const generalMaterials = materials.filter(
     (material) =>
       (!material.subject || material.subject === null || material.subject === "") &&
-      (material.category === "notification" || material.semester === parseInt(selectedSemester))
+      material.semester === visibleSemester
   );
 
   return (
@@ -83,21 +88,24 @@ function Materials({ token, user }) {
         <h2>Assignments, Notes & Study Materials</h2>
       </div>
 
-      {/* Semester Filter */}
       <div className="semester-selector">
-        <label>
-          Select Your Semester:
-          <select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)}>
-            <option value="1">1st Semester</option>
-            <option value="2">2nd Semester</option>
-            <option value="3">3rd Semester</option>
-            <option value="4">4th Semester</option>
-            <option value="5">5th Semester</option>
-            <option value="6">6th Semester</option>
-            <option value="7">7th Semester</option>
-            <option value="8">8th Semester</option>
-          </select>
-        </label>
+        {isAdmin ? (
+          <label>
+            Select Semester:
+            <select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)}>
+              <option value="1">1st Semester</option>
+              <option value="2">2nd Semester</option>
+              <option value="3">3rd Semester</option>
+              <option value="4">4th Semester</option>
+              <option value="5">5th Semester</option>
+              <option value="6">6th Semester</option>
+              <option value="7">7th Semester</option>
+              <option value="8">8th Semester</option>
+            </select>
+          </label>
+        ) : (
+          <p className="semester-lock-note">Showing materials for Semester {studentSemester} only.</p>
+        )}
       </div>
 
       {isLoading ? (

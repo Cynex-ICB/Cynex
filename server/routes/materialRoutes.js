@@ -3,6 +3,7 @@ import fs from "fs";
 import multer from "multer";
 import path from "path";
 import Material from "../models/Material.js";
+import Subject from "../models/Subject.js";
 import protect, { adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -76,10 +77,18 @@ function removeUploadedFile(filePath) {
 }
 
 router.get("/", protect, async (req, res) => {
-  const materials = await Material.find()
+  const filter = {};
+
+  if (req.user.role !== "admin") {
+    filter.semester = req.user.semester;
+  } else if (req.query.semester) {
+    filter.semester = parseInt(req.query.semester);
+  }
+
+  const materials = await Material.find(filter)
     .sort({ createdAt: -1 })
     .populate("subject", "code name semester instructor")
-    .populate("createdBy", "name email");
+    .populate("createdBy", "name collegeEmail");
 
   res.json({ materials });
 });
@@ -93,12 +102,23 @@ router.post("/", protect, adminOnly, uploadMaterialFile, async (req, res) => {
       return res.status(400).json({ message: "Title, type, and description are required." });
     }
 
+    let resolvedSemester = semester ? parseInt(semester) : undefined;
+
+    if (subject) {
+      const selectedSubject = await Subject.findById(subject);
+      if (!selectedSubject) {
+        removeUploadedFile(req.file?.path);
+        return res.status(400).json({ message: "Selected subject was not found." });
+      }
+      resolvedSemester = selectedSubject.semester;
+    }
+
     const material = await Material.create({
       title,
       category,
       description,
       subject: subject || undefined,
-      semester: semester ? parseInt(semester) : undefined,
+      semester: resolvedSemester,
       link,
       dueDate: dueDate || undefined,
       file: req.file

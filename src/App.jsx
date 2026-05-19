@@ -63,10 +63,16 @@ function App() {
     };
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    if (!isAuthenticated && location.pathname === '/login') {
+      navigate('/', { replace: true, state: loginRedirectState });
+    }
+  }, [isAuthenticated, location.pathname, navigate]);
+
   const handleAuthenticated = ({ token, user }) => {
     setAuthToken(token);
     setAuthUser(user);
-    navigate(user?.role === 'admin' ? '/admin' : '/', { replace: true });
+    navigate('/', { replace: true });
   };
 
   const handleLogout = () => {
@@ -74,11 +80,11 @@ function App() {
     localStorage.removeItem('authUser');
     setAuthToken('');
     setAuthUser(null);
-    navigate('/login', { replace: true });
+    navigate('/', { replace: true, state: loginRedirectState });
   };
 
   const authElement = isAuthenticated ? (
-    <Navigate to={authUser?.role === 'admin' ? '/admin' : '/'} replace />
+    <Navigate to="/" replace />
   ) : (
     <main className="auth-page">
       <Auth onAuthenticated={handleAuthenticated} />
@@ -89,7 +95,16 @@ function App() {
     <>
       <InstallPrompt />
       <Routes>
-        <Route path="/login" element={authElement} />
+        <Route
+          path="/login"
+          element={
+            <Navigate
+              to="/"
+              replace
+              state={isAuthenticated ? undefined : loginRedirectState}
+            />
+          }
+        />
         <Route path="/signup" element={authElement} />
         <Route path="/reset" element={authElement} />
         <Route
@@ -99,7 +114,7 @@ function App() {
               <AdminDashboard user={authUser} token={authToken} onLogout={handleLogout} />
             ) : (
               <Navigate
-                to={isAuthenticated ? '/' : '/login'}
+                to={isAuthenticated ? '/' : '/'}
                 replace
                 state={isAuthenticated ? undefined : { from: location, ...loginRedirectState }}
               />
@@ -115,7 +130,9 @@ function App() {
                 <About />
             </ProtectedPublicPage>
           ) : (
-            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+            <main className="auth-page">
+              <Auth onAuthenticated={handleAuthenticated} />
+            </main>
           )
         }
       />
@@ -127,7 +144,7 @@ function App() {
                 <Faculty />
             </ProtectedPublicPage>
           ) : (
-            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
           )
         }
       />
@@ -139,7 +156,7 @@ function App() {
                 <Achievements token={authToken} />
             </ProtectedPublicPage>
           ) : (
-            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
           )
         }
       />
@@ -151,7 +168,7 @@ function App() {
                 <PlacementsInternships token={authToken} />
             </ProtectedPublicPage>
           ) : (
-            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
           )
         }
       />
@@ -163,7 +180,7 @@ function App() {
                 <Materials token={authToken} user={authUser} />
             </ProtectedPublicPage>
           ) : (
-            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
           )
         }
       />
@@ -175,7 +192,7 @@ function App() {
                 <Contact />
             </ProtectedPublicPage>
           ) : (
-            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
           )
         }
       />
@@ -183,7 +200,7 @@ function App() {
           path="*"
           element={
             <Navigate
-              to={isAuthenticated ? (authUser?.role === 'admin' ? '/admin' : '/') : '/login'}
+              to="/"
               replace
               state={isAuthenticated ? undefined : loginRedirectState}
             />

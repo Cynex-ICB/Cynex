@@ -66,8 +66,9 @@ function Auth({ onAuthenticated }) {
   }, [resetToken]);
 
   useEffect(() => {
-    setMode(getModeFromPath(location.pathname));
-    setStatus(location.state?.authMessage || "");
+    const nextMode = getModeFromPath(location.pathname);
+    setMode(nextMode);
+    setStatus(location.state?.authMessage || (nextMode === "login" ? "Please login to continue." : ""));
     setError("");
   }, [location.pathname, location.state]);
 
