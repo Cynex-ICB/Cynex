@@ -12,6 +12,7 @@ import Contact from './components/Contact.jsx';
 import Footer from './components/Footer.jsx';
 import Auth from './components/Auth.jsx';
 import AdminDashboard from './components/AdminDashboard.jsx';
+import InstallPrompt from './components/InstallPrompt.jsx';
 
 function readStoredUser() {
   try {
@@ -81,98 +82,101 @@ function App() {
   );
 
   return (
-    <Routes>
-      <Route path="/login" element={authElement} />
-      <Route path="/signup" element={authElement} />
-      <Route path="/reset" element={authElement} />
-      <Route
-        path="/admin/*"
-        element={
-          isAuthenticated && authUser?.role === 'admin' ? (
-            <AdminDashboard user={authUser} token={authToken} onLogout={handleLogout} />
-          ) : (
-            <Navigate to={isAuthenticated ? '/' : '/login'} replace state={{ from: location }} />
-          )
-        }
-      />
-      <Route
-        path="/"
-        element={
-          isAuthenticated ? (
-            <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-              <Hero />
-              <About />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path="/faculty"
-        element={
-          isAuthenticated ? (
-            <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-              <Faculty />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path="/achievements"
-        element={
-          isAuthenticated ? (
-            <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-              <Achievements token={authToken} />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path="/placements-internships"
-        element={
-          isAuthenticated ? (
-            <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-              <PlacementsInternships token={authToken} />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path="/materials"
-        element={
-          isAuthenticated ? (
-            <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-              <Materials token={authToken} user={authUser} />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path="/contact"
-        element={
-          isAuthenticated ? (
-            <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-              <Contact />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path="*"
-        element={<Navigate to={isAuthenticated ? (authUser?.role === 'admin' ? '/admin' : '/') : '/login'} replace />}
-      />
-    </Routes>
+    <>
+      <InstallPrompt />
+      <Routes>
+        <Route path="/login" element={authElement} />
+        <Route path="/signup" element={authElement} />
+        <Route path="/reset" element={authElement} />
+        <Route
+          path="/admin/*"
+          element={
+            isAuthenticated && authUser?.role === 'admin' ? (
+              <AdminDashboard user={authUser} token={authToken} onLogout={handleLogout} />
+            ) : (
+              <Navigate to={isAuthenticated ? '/' : '/login'} replace state={{ from: location }} />
+            )
+          }
+        />
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? (
+              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                <Hero />
+                <About />
+              </ProtectedPublicPage>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/faculty"
+          element={
+            isAuthenticated ? (
+              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                <Faculty />
+              </ProtectedPublicPage>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/achievements"
+          element={
+            isAuthenticated ? (
+              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                <Achievements token={authToken} />
+              </ProtectedPublicPage>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/placements-internships"
+          element={
+            isAuthenticated ? (
+              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                <PlacementsInternships token={authToken} />
+              </ProtectedPublicPage>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/materials"
+          element={
+            isAuthenticated ? (
+              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                <Materials token={authToken} user={authUser} />
+              </ProtectedPublicPage>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            isAuthenticated ? (
+              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                <Contact />
+              </ProtectedPublicPage>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="*"
+          element={<Navigate to={isAuthenticated ? (authUser?.role === 'admin' ? '/admin' : '/') : '/login'} replace />}
+        />
+      </Routes>
+    </>
   );
 }
 

@@ -1226,6 +1226,58 @@ h4 {
   margin: 0;
 }
 
+.install-prompt {
+  position: fixed;
+  right: clamp(0.85rem, 3vw, 1.5rem);
+  bottom: clamp(0.85rem, 3vw, 1.5rem);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: min(420px, calc(100vw - 1.7rem));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  padding: 1rem;
+  color: #ffffff;
+  background: rgba(18, 35, 61, 0.98);
+  box-shadow: 0 22px 48px rgba(16, 24, 40, 0.26);
+}
+
+.install-prompt strong,
+.install-prompt p {
+  margin: 0;
+}
+
+.install-prompt p {
+  margin-top: 0.25rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.install-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.5rem;
+}
+
+.install-actions button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  color: #101828;
+  font: inherit;
+  font-weight: 900;
+  background: var(--color-accent);
+  cursor: pointer;
+}
+
+.install-actions .install-dismiss {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
 @media (max-width: 900px) {
   .auth-layout {
     grid-template-columns: 1fr;
@@ -1254,6 +1306,16 @@ h4 {
   }
 
   .admin-dashboard-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .install-prompt {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .install-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

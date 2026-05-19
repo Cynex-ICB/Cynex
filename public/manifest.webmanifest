@@ -1,6 +1,7 @@
 {
   "name": "CSE ICB Department Portal",
   "short_name": "CSE ICB",
+  "id": "/",
   "description": "Department portal for CSE IoT, Cybersecurity, and Blockchain Technology.",
   "start_url": "/",
   "scope": "/",
