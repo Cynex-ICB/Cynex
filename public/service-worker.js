@@ -1,4 +1,4 @@
-const CACHE_NAME = "cse-icb-portal-v1";
+const CACHE_NAME = "cse-icb-portal-v2";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",

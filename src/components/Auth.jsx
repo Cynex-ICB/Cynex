@@ -18,6 +18,7 @@ const modeDetails = {
   login: {
     eyebrow: "Welcome back",
     title: "Login to your portal",
+    note: "Please login to continue.",
   },
   signup: {
     eyebrow: "New account",
@@ -66,8 +67,9 @@ function Auth({ onAuthenticated }) {
 
   useEffect(() => {
     setMode(getModeFromPath(location.pathname));
-    clearMessages();
-  }, [location.pathname]);
+    setStatus(location.state?.authMessage || "");
+    setError("");
+  }, [location.pathname, location.state]);
 
   const updateField = (event) => {
     const { name, value } = event.target;

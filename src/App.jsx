@@ -43,6 +43,10 @@ function ProtectedPublicPage({ user, onLogout, children }) {
   );
 }
 
+const loginRedirectState = {
+  authMessage: 'Please login to continue.',
+};
+
 function App() {
   const [authToken, setAuthToken] = useState(() => localStorage.getItem('authToken') || '');
   const [authUser, setAuthUser] = useState(readStoredUser);
@@ -94,7 +98,11 @@ function App() {
             isAuthenticated && authUser?.role === 'admin' ? (
               <AdminDashboard user={authUser} token={authToken} onLogout={handleLogout} />
             ) : (
-              <Navigate to={isAuthenticated ? '/' : '/login'} replace state={{ from: location }} />
+              <Navigate
+                to={isAuthenticated ? '/' : '/login'}
+                replace
+                state={isAuthenticated ? undefined : { from: location, ...loginRedirectState }}
+              />
             )
           }
         />
@@ -105,75 +113,81 @@ function App() {
               <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
                 <Hero />
                 <About />
-              </ProtectedPublicPage>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+            </ProtectedPublicPage>
+          ) : (
+            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+          )
+        }
+      />
         <Route
           path="/faculty"
           element={
             isAuthenticated ? (
               <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
                 <Faculty />
-              </ProtectedPublicPage>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+            </ProtectedPublicPage>
+          ) : (
+            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+          )
+        }
+      />
         <Route
           path="/achievements"
           element={
             isAuthenticated ? (
               <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
                 <Achievements token={authToken} />
-              </ProtectedPublicPage>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+            </ProtectedPublicPage>
+          ) : (
+            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+          )
+        }
+      />
         <Route
           path="/placements-internships"
           element={
             isAuthenticated ? (
               <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
                 <PlacementsInternships token={authToken} />
-              </ProtectedPublicPage>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+            </ProtectedPublicPage>
+          ) : (
+            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+          )
+        }
+      />
         <Route
           path="/materials"
           element={
             isAuthenticated ? (
               <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
                 <Materials token={authToken} user={authUser} />
-              </ProtectedPublicPage>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+            </ProtectedPublicPage>
+          ) : (
+            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+          )
+        }
+      />
         <Route
           path="/contact"
           element={
             isAuthenticated ? (
               <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
                 <Contact />
-              </ProtectedPublicPage>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+            </ProtectedPublicPage>
+          ) : (
+            <Navigate to="/login" replace state={{ from: location, ...loginRedirectState }} />
+          )
+        }
+      />
         <Route
           path="*"
-          element={<Navigate to={isAuthenticated ? (authUser?.role === 'admin' ? '/admin' : '/') : '/login'} replace />}
+          element={
+            <Navigate
+              to={isAuthenticated ? (authUser?.role === 'admin' ? '/admin' : '/') : '/login'}
+              replace
+              state={isAuthenticated ? undefined : loginRedirectState}
+            />
+          }
         />
       </Routes>
     </>
