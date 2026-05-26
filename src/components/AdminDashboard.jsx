@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://cynex-portal-backend.vercel.app/api";
-const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+import { API_BASE_URL, API_ORIGIN, readApiJson } from "../utils/api.js";
 
 const initialMaterialForm = {
   title: "",
@@ -33,6 +31,33 @@ const initialContentForm = {
   link: "",
 };
 
+const initialStudentProfileForm = {
+  studentId: "",
+  semester: "1",
+  classCoordinatorName: "",
+  mentorName: "",
+};
+
+const initialCieForm = {
+  semester: "1",
+  subject: "",
+  cieNumber: "1",
+  maxMarks: "50",
+};
+
+const initialCoordinatorForm = {
+  teacherUserId: "",
+  teacherId: "",
+  semester: "3",
+};
+
+const initialMentorForm = {
+  teacherUserId: "",
+  teacherId: "",
+  startUsn: "",
+  endUsn: "",
+};
+
 const categoryLabels = {
   assignment: "Assignment",
   note: "Note",
@@ -56,51 +81,131 @@ function getAuthHeaders(token) {
 }
 
 async function readJson(response) {
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Something went wrong.");
-  }
-
-  return data;
+  return readApiJson(response);
 }
 
 function AdminDashboard({ user, token, onLogout }) {
+  const [isAdminSidebarOpen, setIsAdminSidebarOpen] = useState(false);
+  const closeAdminSidebar = () => setIsAdminSidebarOpen(false);
+  const isMasterAdmin = user?.role === "master-admin";
+  const dashboardTitle = isMasterAdmin ? "Master Admin Panel" : "Admin Panel";
+  const dashboardEyebrow = isMasterAdmin ? "HOD Dashboard" : "Teacher Dashboard";
+  const defaultRoute = isMasterAdmin ? "subjects" : "academic";
+
   return (
     <main className="admin-page">
-      <header className="admin-header">
-        <div>
-          <p className="eyebrow">Professor Dashboard</p>
-          <h1>Admin Panel</h1>
-          <span>
-            {user?.name} - {user?.collegeEmail || user?.email}
-          </span>
-        </div>
-        <div className="admin-header-actions">
-          <Link className="nav-logout admin-back-link" to="/">
+      <button
+        className={`admin-sidebar-toggle ${isAdminSidebarOpen ? "is-open" : ""}`}
+        type="button"
+        aria-label={isAdminSidebarOpen ? "Close admin sidebar" : "Open admin sidebar"}
+        aria-controls="admin-sidebar"
+        aria-expanded={isAdminSidebarOpen}
+        onClick={() => setIsAdminSidebarOpen((current) => !current)}
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <button
+        className={`admin-sidebar-backdrop ${isAdminSidebarOpen ? "show" : ""}`}
+        type="button"
+        aria-label="Close admin sidebar"
+        aria-hidden={!isAdminSidebarOpen}
+        tabIndex={isAdminSidebarOpen ? 0 : -1}
+        onClick={closeAdminSidebar}
+      />
+
+      <div className="admin-shell">
+        <aside
+          className={`admin-sidebar ${isAdminSidebarOpen ? "show" : ""}`}
+          id="admin-sidebar"
+        >
+          <div className="admin-sidebar-brand">
+            <p className="eyebrow">{dashboardEyebrow}</p>
+            <h2>{dashboardTitle}</h2>
+            <span>{user?.name}</span>
+          </div>
+
+          <nav className="admin-dashboard-nav" aria-label="Admin dashboard">
+            {isMasterAdmin ? (
+              <>
+                <NavLink to="/admin/subjects" onClick={closeAdminSidebar}>
+                  Subject Declaration
+                </NavLink>
+                <NavLink to="/admin/coordinators" onClick={closeAdminSidebar}>
+                  Class Coordinators
+                </NavLink>
+                <NavLink to="/admin/mentors" onClick={closeAdminSidebar}>
+                  Mentor Assignment
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink to="/admin/academic" onClick={closeAdminSidebar}>
+                  Academic Content
+                </NavLink>
+                <NavLink to="/admin/activity-alerts" onClick={closeAdminSidebar}>
+                  Activity Alerts
+                </NavLink>
+                <NavLink to="/admin/showcase" onClick={closeAdminSidebar}>
+                  Showcase Pages
+                </NavLink>
+                <NavLink to="/admin/cie-marks" onClick={closeAdminSidebar}>
+                  CIE Marks
+                </NavLink>
+              </>
+            )}
+          </nav>
+
+          <div className="admin-sidebar-actions">
+          <Link className="nav-logout admin-back-link" to="/" onClick={closeAdminSidebar}>
             Back to Website
           </Link>
-          <button className="nav-logout admin-logout" type="button" onClick={onLogout}>
+          <button
+            className="nav-logout admin-logout"
+            type="button"
+            onClick={() => {
+              closeAdminSidebar();
+              onLogout?.();
+            }}
+          >
             Logout
           </button>
+          </div>
+        </aside>
+
+        <div className="admin-content">
+          <header className="admin-header">
+            <div>
+              <p className="eyebrow">{dashboardEyebrow}</p>
+              <h1>{dashboardTitle}</h1>
+              <span>
+                {user?.name} - {user?.collegeEmail || user?.email}
+              </span>
+            </div>
+          </header>
+
+          <Routes>
+            <Route index element={<Navigate to={defaultRoute} replace />} />
+            {isMasterAdmin ? (
+              <>
+                <Route path="subjects" element={<SubjectsPage token={token} />} />
+                <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />
+                <Route path="mentors" element={<MentorAssignmentsPage token={token} />} />
+              </>
+            ) : (
+              <>
+                <Route path="academic" element={<AcademicContentPage token={token} />} />
+                <Route path="activity-alerts" element={<ActivityAlertsPage token={token} />} />
+                <Route path="showcase" element={<ShowcaseContentPage token={token} />} />
+                <Route path="cie-marks" element={<CieMarksPage token={token} />} />
+              </>
+            )}
+            <Route path="*" element={<Navigate to={defaultRoute} replace />} />
+          </Routes>
         </div>
-      </header>
-
-      <nav className="admin-dashboard-nav" aria-label="Admin dashboard">
-        <NavLink to="/admin/academic">Academic Content</NavLink>
-        <NavLink to="/admin/activity-alerts">Activity Alerts</NavLink>
-        <NavLink to="/admin/showcase">Showcase Pages</NavLink>
-        <NavLink to="/admin/subjects">Subjects</NavLink>
-      </nav>
-
-      <Routes>
-        <Route index element={<Navigate to="academic" replace />} />
-        <Route path="academic" element={<AcademicContentPage token={token} />} />
-        <Route path="activity-alerts" element={<ActivityAlertsPage token={token} />} />
-        <Route path="showcase" element={<ShowcaseContentPage token={token} />} />
-        <Route path="subjects" element={<SubjectsPage token={token} />} />
-        <Route path="*" element={<Navigate to="academic" replace />} />
-      </Routes>
+      </div>
     </main>
   );
 }
@@ -351,6 +456,312 @@ function ShowcaseContentPage({ token }) {
       description="These posts appear dynamically on the public achievements and placements pages."
       allowTypeChoice
     />
+  );
+}
+
+function CieMarksPage({ token }) {
+  const [form, setForm] = useState(initialCieForm);
+  const [students, setStudents] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [marks, setMarks] = useState([]);
+  const [markEntries, setMarkEntries] = useState({});
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const authHeaders = getAuthHeaders(token);
+
+  useEffect(() => {
+    loadOptions();
+    loadMarks();
+  }, [token]);
+
+  const loadOptions = async () => {
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/cie-marks/options`, {
+          headers: authHeaders,
+        })
+      );
+      setStudents(data.students || []);
+      setSubjects(data.subjects || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
+  };
+
+  const loadMarks = async () => {
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/cie-marks`, {
+          headers: authHeaders,
+        })
+      );
+      setMarks(data.marks || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
+  };
+
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+      ...(name === "semester" ? { subject: "" } : {}),
+    }));
+  };
+
+  useEffect(() => {
+    const nextEntries = {};
+
+    students
+      .filter((student) => student.semester === Number(form.semester))
+      .forEach((student) => {
+        const existingMark = marks.find(
+          (mark) =>
+            mark.student?._id === student._id &&
+            mark.subject?._id === form.subject &&
+            String(mark.cieNumber) === String(form.cieNumber)
+        );
+
+        nextEntries[student._id] = {
+          marksObtained: existingMark ? String(existingMark.marksObtained) : "",
+          remarks: existingMark?.remarks || "",
+        };
+      });
+
+    setMarkEntries(nextEntries);
+  }, [students, marks, form.semester, form.subject, form.cieNumber]);
+
+  const updateMarkEntry = (studentId, field, value) => {
+    setMarkEntries((currentEntries) => ({
+      ...currentEntries,
+      [studentId]: {
+        ...(currentEntries[studentId] || { marksObtained: "", remarks: "" }),
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setStatus("");
+    setError("");
+
+    if (!form.subject) {
+      setError("Select a subject before saving marks.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/cie-marks/bulk`, {
+          method: "POST",
+          headers: {
+            ...authHeaders,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...form,
+            entries: Object.entries(markEntries).map(([student, entry]) => ({
+              student,
+              marksObtained: entry.marksObtained,
+              remarks: entry.remarks,
+            })),
+          }),
+        })
+      );
+
+      setMarks((currentMarks) => {
+        const savedIds = new Set((data.marks || []).map((mark) => mark.id));
+        return [...(data.marks || []), ...currentMarks.filter((mark) => !savedIds.has(mark.id))];
+      });
+      setStatus(`Saved CIE marks for ${data.saved} students.`);
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteMark = async (markId) => {
+    setStatus("");
+    setError("");
+
+    try {
+      await readJson(
+        await fetch(`${API_BASE_URL}/cie-marks/${markId}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        })
+      );
+      setMarks((currentMarks) => currentMarks.filter((mark) => mark.id !== markId));
+      setStatus("CIE mark deleted.");
+    } catch (deleteError) {
+      setError(deleteError.message);
+    }
+  };
+
+  const visibleSemester = Number(form.semester);
+  const semesterStudents = students.filter((student) => student.semester === visibleSemester);
+  const semesterSubjects = subjects.filter((subject) => subject.semester === visibleSemester);
+  const visibleMarks = marks.filter(
+    (mark) =>
+      mark.semester === visibleSemester &&
+      (!form.subject || mark.subject?._id === form.subject) &&
+      String(mark.cieNumber) === String(form.cieNumber)
+  );
+
+  return (
+    <section className="admin-route-panel cie-sheet-layout">
+      <form className="card admin-form" onSubmit={handleSubmit}>
+        <div>
+          <p className="eyebrow">CIE Marks</p>
+          <h2>Bulk enter subject-wise CIE marks</h2>
+          <span className="admin-file-hint">
+            Select a semester, subject, and CIE number, then fill marks for all students like a sheet.
+          </span>
+        </div>
+
+        <div className="cie-sheet-controls">
+          <label>
+            Semester
+            <select name="semester" value={form.semester} onChange={updateField}>
+              {semesterOptions.map((semester) => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Subject
+            <select name="subject" value={form.subject} onChange={updateField} required>
+              <option value="">Choose subject</option>
+              {semesterSubjects.map((subject) => (
+                <option key={subject._id} value={subject._id}>
+                  {subject.code} - {subject.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            CIE
+            <select name="cieNumber" value={form.cieNumber} onChange={updateField}>
+              <option value="1">CIE 1</option>
+              <option value="2">CIE 2</option>
+              <option value="3">CIE 3</option>
+            </select>
+          </label>
+
+          <label>
+            Max Marks
+            <input
+              name="maxMarks"
+              type="number"
+              min="1"
+              value={form.maxMarks}
+              onChange={updateField}
+              required
+            />
+          </label>
+        </div>
+
+        <div className="cie-sheet-table-wrap">
+          <table className="cie-sheet-table">
+            <thead>
+              <tr>
+                <th>USN</th>
+                <th>Name</th>
+                <th>Marks</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {semesterStudents.length ? (
+                semesterStudents.map((student) => (
+                  <tr key={student._id}>
+                    <td>{student.usn || "-"}</td>
+                    <td>{student.name}</td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        max={form.maxMarks}
+                        value={markEntries[student._id]?.marksObtained || ""}
+                        onChange={(event) =>
+                          updateMarkEntry(student._id, "marksObtained", event.target.value)
+                        }
+                        placeholder="0"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={markEntries[student._id]?.remarks || ""}
+                        onChange={(event) => updateMarkEntry(student._id, "remarks", event.target.value)}
+                        placeholder="Optional"
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4">No students found for this semester.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {status ? <p className="form-message success">{status}</p> : null}
+        {error ? <p className="form-message error">{error}</p> : null}
+
+        <button className="primary-button admin-submit" type="submit" disabled={isLoading}>
+          {isLoading ? "Saving..." : "Save All Marks"}
+        </button>
+      </form>
+
+      <div className="admin-posts">
+        <div className="admin-section-heading">
+          <p className="eyebrow">Recorded Marks</p>
+          <h2>Saved records</h2>
+        </div>
+
+        <div className="student-list">
+          {visibleMarks.length ? (
+            visibleMarks.map((mark) => (
+              <article className="card student-card" key={mark.id}>
+                <div className="student-card-top">
+                  <span>CIE {mark.cieNumber}</span>
+                  <button type="button" onClick={() => deleteMark(mark.id)}>
+                    Delete
+                  </button>
+                </div>
+                <h3>{mark.student?.name || "Student"}</h3>
+                <small>{mark.student?.usn || mark.student?.collegeEmail}</small>
+                <p>
+                  {mark.subject?.code} - {mark.subject?.name}
+                </p>
+                <strong>
+                  {mark.marksObtained}/{mark.maxMarks}
+                </strong>
+                {mark.remarks ? <p>{mark.remarks}</p> : null}
+              </article>
+            ))
+          ) : (
+            <div className="card empty-state">
+              <h3>No CIE marks yet</h3>
+              <p>Saved CIE marks for this semester will appear here.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -768,6 +1179,567 @@ function SubjectsPage({ token }) {
             <div className="card empty-state">
               <h3>No subjects for this semester</h3>
               <p>Add subjects for this semester using the form.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CoordinatorAssignmentsPage({ token }) {
+  const [form, setForm] = useState(initialCoordinatorForm);
+  const [teachers, setTeachers] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const authHeaders = getAuthHeaders(token);
+
+  useEffect(() => {
+    loadTeachers();
+    loadStudents();
+  }, [token]);
+
+  const loadTeachers = async () => {
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/teachers`, {
+          headers: authHeaders,
+        })
+      );
+      setTeachers(data.teachers || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
+  };
+
+  const loadStudents = async () => {
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/students`, {
+          headers: authHeaders,
+        })
+      );
+      setStudents(data.students || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
+  };
+
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((currentForm) => ({ ...currentForm, [name]: value }));
+  };
+
+  const selectTeacher = (teacherId) => {
+    const teacher = teachers.find((currentTeacher) => currentTeacher.id === teacherId);
+    setForm((currentForm) => ({
+      ...currentForm,
+      teacherUserId: teacherId,
+      teacherId: teacher?.teacherId || currentForm.teacherId,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setStatus("");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/coordinators`, {
+          method: "POST",
+          headers: {
+            ...authHeaders,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        })
+      );
+
+      setTeachers((currentTeachers) =>
+        currentTeachers.map((teacher) => (teacher.id === data.teacher.id ? data.teacher : teacher))
+      );
+      setStatus(`Coordinator assigned. Updated ${data.updatedStudents} student profiles.`);
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const coordinatorSemesters = semesterOptions.slice(2);
+  const studentsBySemester = coordinatorSemesters.map((semester) => {
+    const semesterNumber = Number(semester);
+    const coordinator = teachers.find((teacher) =>
+      (teacher.coordinatorSemesters || []).includes(semesterNumber)
+    );
+
+    return {
+      semester,
+      count: students.filter((student) => student.semester === semesterNumber).length,
+      coordinator,
+    };
+  });
+
+  return (
+    <section className="admin-grid admin-route-panel">
+      <form className="card admin-form" onSubmit={handleSubmit}>
+        <div>
+          <p className="eyebrow">Class Coordinators</p>
+          <h2>Assign coordinator for semesters 3 to 8</h2>
+          <span className="admin-file-hint">
+            Choose a teacher admin and assign them as class coordinator for a semester.
+          </span>
+        </div>
+
+        <label>
+          Teacher
+          <select
+            name="teacherUserId"
+            value={form.teacherUserId}
+            onChange={(event) => selectTeacher(event.target.value)}
+            required
+          >
+            <option value="">Choose teacher</option>
+            {teachers.map((teacher) => (
+              <option key={teacher.id} value={teacher.id}>
+                {teacher.name} {teacher.teacherId ? `(${teacher.teacherId})` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Teacher ID
+          <input
+            name="teacherId"
+            type="text"
+            value={form.teacherId}
+            onChange={updateField}
+            placeholder="Teacher ID"
+            required
+          />
+        </label>
+
+        <label>
+          Semester
+          <select name="semester" value={form.semester} onChange={updateField}>
+            {coordinatorSemesters.map((semester) => (
+              <option key={semester} value={semester}>
+                Semester {semester}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {status ? <p className="form-message success">{status}</p> : null}
+        {error ? <p className="form-message error">{error}</p> : null}
+
+        <button className="primary-button admin-submit" type="submit" disabled={isLoading}>
+          {isLoading ? "Assigning..." : "Assign Coordinator"}
+        </button>
+      </form>
+
+      <div className="admin-posts">
+        <div className="admin-section-heading">
+          <p className="eyebrow">Semester List</p>
+          <h2>Coordinator assignments</h2>
+        </div>
+
+        <div className="student-list">
+          {studentsBySemester.map((item) => (
+            <article className="card student-card" key={item.semester}>
+              <div className="student-card-top">
+                <span>Semester {item.semester}</span>
+                <small>{item.count} students</small>
+              </div>
+              <h3>{item.coordinator?.name || "Not assigned"}</h3>
+              {item.coordinator?.teacherId ? <small>ID: {item.coordinator.teacherId}</small> : null}
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MentorAssignmentsPage({ token }) {
+  const [form, setForm] = useState(initialMentorForm);
+  const [teachers, setTeachers] = useState([]);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const authHeaders = getAuthHeaders(token);
+
+  useEffect(() => {
+    loadTeachers();
+  }, [token]);
+
+  const loadTeachers = async () => {
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/teachers`, {
+          headers: authHeaders,
+        })
+      );
+      setTeachers(data.teachers || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
+  };
+
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((currentForm) => ({ ...currentForm, [name]: value.toUpperCase() }));
+  };
+
+  const selectTeacher = (teacherId) => {
+    const teacher = teachers.find((currentTeacher) => currentTeacher.id === teacherId);
+    setForm((currentForm) => ({
+      ...currentForm,
+      teacherUserId: teacherId,
+      teacherId: teacher?.teacherId || currentForm.teacherId,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setStatus("");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/mentors`, {
+          method: "POST",
+          headers: {
+            ...authHeaders,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        })
+      );
+
+      setTeachers((currentTeachers) =>
+        currentTeachers.map((teacher) => (teacher.id === data.teacher.id ? data.teacher : teacher))
+      );
+      setStatus(`Mentor assigned to ${data.updatedStudents} students.`);
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <section className="admin-grid admin-route-panel">
+      <form className="card admin-form" onSubmit={handleSubmit}>
+        <div>
+          <p className="eyebrow">Mentor Assignment</p>
+          <h2>Assign mentor by USN range</h2>
+          <span className="admin-file-hint">
+            Choose a teacher and enter the start and end USN for the student range.
+          </span>
+        </div>
+
+        <label>
+          Mentor
+          <select
+            name="teacherUserId"
+            value={form.teacherUserId}
+            onChange={(event) => selectTeacher(event.target.value)}
+            required
+          >
+            <option value="">Choose teacher</option>
+            {teachers.map((teacher) => (
+              <option key={teacher.id} value={teacher.id}>
+                {teacher.name} {teacher.teacherId ? `(${teacher.teacherId})` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Teacher ID
+          <input
+            name="teacherId"
+            type="text"
+            value={form.teacherId}
+            onChange={updateField}
+            placeholder="Teacher ID"
+            required
+          />
+        </label>
+
+        <label>
+          Start USN
+          <input name="startUsn" type="text" value={form.startUsn} onChange={updateField} required />
+        </label>
+
+        <label>
+          End USN
+          <input name="endUsn" type="text" value={form.endUsn} onChange={updateField} required />
+        </label>
+
+        {status ? <p className="form-message success">{status}</p> : null}
+        {error ? <p className="form-message error">{error}</p> : null}
+
+        <button className="primary-button admin-submit" type="submit" disabled={isLoading}>
+          {isLoading ? "Assigning..." : "Assign Mentor"}
+        </button>
+      </form>
+
+      <div className="admin-posts">
+        <div className="admin-section-heading">
+          <p className="eyebrow">Teacher Profiles</p>
+          <h2>Mentor ranges</h2>
+        </div>
+
+        <div className="student-list">
+          {teachers.map((teacher) => (
+            <article className="card student-card" key={teacher.id}>
+              <h3>{teacher.name}</h3>
+              {teacher.teacherId ? <small>ID: {teacher.teacherId}</small> : null}
+              {(teacher.mentorAssignments || []).length ? (
+                teacher.mentorAssignments.map((assignment, index) => (
+                  <p key={`${assignment.startUsn}-${assignment.endUsn}-${index}`}>
+                    {assignment.startUsn} to {assignment.endUsn}
+                  </p>
+                ))
+              ) : (
+                <p>No mentor ranges assigned.</p>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StudentsPage({ token }) {
+  const [form, setForm] = useState(initialStudentProfileForm);
+  const [students, setStudents] = useState([]);
+  const [selectedSemesterFilter, setSelectedSemesterFilter] = useState("all");
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const authHeaders = getAuthHeaders(token);
+
+  useEffect(() => {
+    loadStudents();
+  }, [token]);
+
+  const loadStudents = async () => {
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/students`, {
+          headers: authHeaders,
+        })
+      );
+      setStudents(data.students || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
+  };
+
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((currentForm) => ({ ...currentForm, [name]: value }));
+  };
+
+  const selectStudent = (student) => {
+    setForm({
+      studentId: student.id,
+      semester: String(student.semester || 1),
+      classCoordinatorName: student.classCoordinatorName || "",
+      mentorName: student.mentorName || "",
+    });
+    setStatus("");
+    setError("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setStatus("");
+    setError("");
+
+    if (!form.studentId) {
+      setError("Select a student before saving.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/students/${form.studentId}/profile`, {
+          method: "PATCH",
+          headers: {
+            ...authHeaders,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            semester: form.semester,
+            classCoordinatorName: form.classCoordinatorName,
+            mentorName: form.mentorName,
+          }),
+        })
+      );
+
+      setStudents((currentStudents) =>
+        currentStudents.map((student) => (student.id === data.student.id ? data.student : student))
+      );
+      setForm({
+        studentId: data.student.id,
+        semester: String(data.student.semester || 1),
+        classCoordinatorName: data.student.classCoordinatorName || "",
+        mentorName: data.student.mentorName || "",
+      });
+      setStatus("Student profile updated.");
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const selectedStudent = students.find((student) => student.id === form.studentId);
+  const filteredStudents =
+    selectedSemesterFilter === "all"
+      ? students
+      : students.filter((student) => student.semester === parseInt(selectedSemesterFilter));
+
+  return (
+    <section className="admin-grid admin-route-panel">
+      <form className="card admin-form" onSubmit={handleSubmit}>
+        <div>
+          <p className="eyebrow">Student Profiles</p>
+          <h2>Assign coordinator and mentor</h2>
+          <span className="admin-file-hint">
+            Select a student, then save their class coordinator, mentor, and semester.
+          </span>
+        </div>
+
+        <label>
+          Student
+          <select
+            name="studentId"
+            value={form.studentId}
+            onChange={(event) => {
+              const student = students.find((currentStudent) => currentStudent.id === event.target.value);
+              if (student) {
+                selectStudent(student);
+              } else {
+                setForm(initialStudentProfileForm);
+              }
+            }}
+            required
+          >
+            <option value="">Choose student</option>
+            {students.map((student) => (
+              <option key={student.id} value={student.id}>
+                {student.name} - Sem {student.semester}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {selectedStudent ? (
+          <div className="student-selected-note">
+            <strong>{selectedStudent.collegeEmail}</strong>
+            {selectedStudent.usn ? <span>{selectedStudent.usn}</span> : null}
+          </div>
+        ) : null}
+
+        <label>
+          Semester
+          <select name="semester" value={form.semester} onChange={updateField}>
+            {semesterOptions.map((semester) => (
+              <option key={semester} value={semester}>
+                Semester {semester}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Class Coordinator Name
+          <input
+            name="classCoordinatorName"
+            type="text"
+            value={form.classCoordinatorName}
+            onChange={updateField}
+            placeholder="Faculty coordinator name"
+            maxLength="80"
+          />
+        </label>
+
+        <label>
+          Mentor Name
+          <input
+            name="mentorName"
+            type="text"
+            value={form.mentorName}
+            onChange={updateField}
+            placeholder="Faculty mentor name"
+            maxLength="80"
+          />
+        </label>
+
+        {status ? <p className="form-message success">{status}</p> : null}
+        {error ? <p className="form-message error">{error}</p> : null}
+
+        <button className="primary-button admin-submit" type="submit" disabled={isLoading}>
+          {isLoading ? "Saving..." : "Save Student Profile"}
+        </button>
+      </form>
+
+      <div className="admin-posts">
+        <div className="admin-section-heading">
+          <p className="eyebrow">Students</p>
+          <h2>Registered students</h2>
+        </div>
+
+        <label className="semester-filter">
+          Filter by Semester
+          <select
+            value={selectedSemesterFilter}
+            onChange={(event) => setSelectedSemesterFilter(event.target.value)}
+          >
+            <option value="all">All Semesters</option>
+            {semesterOptions.map((semester) => (
+              <option key={semester} value={semester}>
+                Semester {semester}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="student-list">
+          {filteredStudents.length ? (
+            filteredStudents.map((student) => (
+              <article className="card student-card" key={student.id}>
+                <div className="student-card-top">
+                  <span>Semester {student.semester}</span>
+                  <button type="button" onClick={() => selectStudent(student)}>
+                    Edit
+                  </button>
+                </div>
+                <h3>{student.name}</h3>
+                <small>{student.collegeEmail}</small>
+                {student.usn ? <small>USN: {student.usn}</small> : null}
+                <p>Coordinator: {student.classCoordinatorName || "Not assigned"}</p>
+                <p>Mentor: {student.mentorName || "Not assigned"}</p>
+              </article>
+            ))
+          ) : (
+            <div className="card empty-state">
+              <h3>No students found</h3>
+              <p>Students will appear here after signup.</p>
             </div>
           )}
         </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import Navbar from './components/Navbar.jsx';
@@ -13,6 +13,8 @@ import Footer from './components/Footer.jsx';
 import Auth from './components/Auth.jsx';
 import AdminDashboard from './components/AdminDashboard.jsx';
 import InstallPrompt from './components/InstallPrompt.jsx';
+import Profile from './components/Profile.jsx';
+import { API_BASE_URL, readApiJson } from './utils/api.js';
 
 function readStoredUser() {
   try {
@@ -26,12 +28,12 @@ function readStoredUser() {
 
 function PublicLayout({ user, onLogout, children }) {
   return (
-    <>
-      <Header />
+    <div className="public-layout">
       <Navbar user={user} onLogout={onLogout} />
-      <main>{children}</main>
+      {/* <Header /> */}
+      <main className="public-main">{children}</main>
       <Footer />
-    </>
+    </div>
   );
 }
 
@@ -69,19 +71,57 @@ function App() {
     }
   }, [isAuthenticated, location.pathname, navigate]);
 
+  const handleLogout = useCallback((state = loginRedirectState) => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    setAuthToken('');
+    setAuthUser(null);
+    navigate('/', { replace: true, state });
+  }, [navigate]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function validateSession() {
+      if (!authToken) return;
+
+      try {
+        const data = await readApiJson(
+          await fetch(`${API_BASE_URL}/auth/me`, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          })
+        );
+
+        if (isMounted) {
+          localStorage.setItem('authUser', JSON.stringify(data.user));
+          setAuthUser(data.user);
+        }
+      } catch (error) {
+        if (isMounted && /not authorized/i.test(error.message)) {
+          handleLogout({ authMessage: 'Session expired. Please login again.' });
+        }
+      }
+    }
+
+    validateSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authToken, handleLogout]);
+
   const handleAuthenticated = ({ token, user }) => {
     setAuthToken(token);
     setAuthUser(user);
     navigate('/', { replace: true });
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    setAuthToken('');
-    setAuthUser(null);
-    navigate('/', { replace: true, state: loginRedirectState });
-  };
+  const handleUserUpdate = useCallback((user) => {
+    localStorage.setItem('authUser', JSON.stringify(user));
+    setAuthUser(user);
+  }, []);
 
   const authElement = isAuthenticated ? (
     <Navigate to="/" replace />
@@ -110,7 +150,7 @@ function App() {
         <Route
           path="/admin/*"
           element={
-            isAuthenticated && authUser?.role === 'admin' ? (
+            isAuthenticated && ['admin', 'master-admin'].includes(authUser?.role) ? (
               <AdminDashboard user={authUser} token={authToken} onLogout={handleLogout} />
             ) : (
               <Navigate
@@ -178,6 +218,18 @@ function App() {
             isAuthenticated ? (
               <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
                 <Materials token={authToken} user={authUser} />
+            </ProtectedPublicPage>
+          ) : (
+            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+          )
+        }
+        />
+        <Route
+          path="/profile"
+          element={
+            isAuthenticated ? (
+              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                <Profile token={authToken} user={authUser} onUserUpdate={handleUserUpdate} />
             </ProtectedPublicPage>
           ) : (
             <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />

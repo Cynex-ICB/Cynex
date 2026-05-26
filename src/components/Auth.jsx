@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import aietLogo from "../assets/aiet-logo.png";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://cynex-portal-backend.vercel.app/api";
+import { API_BASE_URL, readApiJson } from "../utils/api.js";
 
 const initialFields = {
   name: "",
@@ -23,7 +22,7 @@ const modeDetails = {
   signup: {
     eyebrow: "New account",
     title: "Create your portal access",
-    note: "Set up a secure account with your department email.",
+    note: "Set up a secure account with your email.",
   },
   reset: {
     eyebrow: "Password help",
@@ -111,13 +110,7 @@ function Auth({ onAuthenticated }) {
       ...options,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Something went wrong.");
-    }
-
-    return data;
+    return readApiJson(response);
   };
 
   const handleSubmit = async (event) => {
@@ -252,11 +245,9 @@ function Auth({ onAuthenticated }) {
               <input
                 name="collegeEmail"
                 type="email"
-                placeholder="4AL23IC044@aiet.org.in"
+                placeholder="name@example.com"
                 value={fields.collegeEmail}
                 onChange={updateField}
-                pattern="^4[aA][lL][0-9]{2}[iI][cC][0-9]{3}@aiet\.org\.in$"
-                title="Use your department email format: 4ALxxICxxx@aiet.org.in"
                 required
               />
             </label>

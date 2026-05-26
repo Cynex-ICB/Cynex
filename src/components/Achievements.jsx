@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://cynex-portal-backend.vercel.app/api";
+import { API_BASE_URL, readApiJson } from "../utils/api.js";
 
 const fallbackAchievements = [
   {
@@ -33,9 +32,9 @@ function Achievements({ token }) {
             Authorization: `Bearer ${token}`,
           },
         });
-        const data = await response.json();
+        const data = await readApiJson(response);
 
-        if (response.ok && data.posts?.length) {
+        if (data.posts?.length) {
           setAchievements(data.posts);
         }
       } catch (error) {

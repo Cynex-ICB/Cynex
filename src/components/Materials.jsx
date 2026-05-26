@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://cynex-portal-backend.vercel.app/api";
-const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+import { API_BASE_URL, API_ORIGIN, readApiJson } from "../utils/api.js";
 
 const categoryLabels = {
   assignment: "Assignment",
@@ -36,10 +34,8 @@ function Materials({ token, user }) {
       const response = await fetch(`${API_BASE_URL}/materials${semesterQuery}`, {
         headers: authHeaders,
       });
-      const data = await response.json();
-      if (response.ok) {
-        setMaterials(data.materials || []);
-      }
+      const data = await readApiJson(response);
+      setMaterials(data.materials || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -52,10 +48,8 @@ function Materials({ token, user }) {
       const response = await fetch(`${API_BASE_URL}/subjects`, {
         headers: authHeaders,
       });
-      const data = await response.json();
-      if (response.ok) {
-        setSubjects(data.subjects || []);
-      }
+      const data = await readApiJson(response);
+      setSubjects(data.subjects || []);
     } catch (err) {
       console.error(err);
     }
