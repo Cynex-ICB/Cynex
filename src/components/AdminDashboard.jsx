@@ -180,7 +180,15 @@ function AcademicContentPage({ token }) {
       setForm(initialMaterialForm);
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
-      setStatus("Academic post published.");
+      if (data.notification?.error) {
+        setStatus("Academic post published, but email notification failed.");
+      } else if (data.notification?.previewOnly && data.notification?.notified) {
+        setStatus(`Academic post published. Email preview generated for ${data.notification.notified} students.`);
+      } else if (data.notification?.notified) {
+        setStatus(`Academic post published. Email sent to ${data.notification.notified} students.`);
+      } else {
+        setStatus("Academic post published. No students were found for that semester.");
+      }
     } catch (submitError) {
       setError(submitError.message);
     } finally {
