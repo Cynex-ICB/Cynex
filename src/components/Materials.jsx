@@ -8,13 +8,15 @@ const categoryLabels = {
   notification: "Notification",
 };
 
+const semesterOptions = Array.from({ length: 6 }, (_, index) => String(index + 3));
+
 function Materials({ token, user }) {
   const [materials, setMaterials] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [selectedSemester, setSelectedSemester] = useState(user?.semester || 1);
+  const [selectedSemester, setSelectedSemester] = useState(user?.semester || 3);
   const [isLoading, setIsLoading] = useState(true);
   const isAdmin = user?.role === "admin";
-  const studentSemester = Number(user?.semester || 1);
+  const studentSemester = Number(user?.semester || 3);
 
   const authHeaders = {
     Authorization: `Bearer ${token}`,
@@ -87,14 +89,11 @@ function Materials({ token, user }) {
           <label>
             Select Semester:
             <select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)}>
-              <option value="1">1st Semester</option>
-              <option value="2">2nd Semester</option>
-              <option value="3">3rd Semester</option>
-              <option value="4">4th Semester</option>
-              <option value="5">5th Semester</option>
-              <option value="6">6th Semester</option>
-              <option value="7">7th Semester</option>
-              <option value="8">8th Semester</option>
+              {semesterOptions.map((semester) => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
             </select>
           </label>
         ) : (

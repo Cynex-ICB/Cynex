@@ -134,7 +134,7 @@ function Profile({ token, user, onUserUpdate }) {
               </div>
               <div>
                 <dt>Semester</dt>
-                <dd>Semester {profile?.semester || 1}</dd>
+                <dd>Semester {profile?.semester || 3}</dd>
               </div>
             </>
           ) : null}

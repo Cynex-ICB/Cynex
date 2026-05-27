@@ -1532,6 +1532,81 @@ h4 {
   background: #ffffff;
 }
 
+.cie-overview-layout {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.cie-overview-header {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.35fr);
+  align-items: end;
+}
+
+.cie-overview-controls {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.cie-overview-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.cie-overview-stats .card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+}
+
+.cie-overview-stats span {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.cie-overview-stats strong {
+  color: var(--color-ink);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.cie-overview-table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.cie-overview-empty {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  padding: 1.5rem;
+  color: var(--color-muted);
+  font-weight: 850;
+  text-align: center;
+}
+
+.cie-overview-table {
+  min-width: 920px;
+}
+
+.cie-overview-subject {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.cie-overview-subject strong {
+  color: var(--color-ink);
+}
+
+.cie-overview-subject span {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
 .admin-form {
   display: grid;
   gap: 1rem;
@@ -1805,6 +1880,15 @@ h4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .cie-overview-header {
+    grid-template-columns: 1fr;
+  }
+
+  .cie-overview-stats {
+    grid-template-columns: repeat(3, minmax(130px, 1fr));
+    overflow-x: auto;
+  }
+
   .admin-shell {
     display: block;
   }
@@ -1991,6 +2075,10 @@ h4 {
   }
 
   .cie-sheet-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .cie-overview-stats {
     grid-template-columns: 1fr;
   }
 }

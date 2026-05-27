@@ -9,7 +9,7 @@ const initialFields = {
   password: "",
   newPassword: "",
   usn: "",
-  semester: "1",
+  semester: "3",
   otp: "",
 };
 
@@ -313,8 +313,6 @@ function Auth({ onAuthenticated }) {
                   onChange={updateField}
                   required
                 >
-                  <option value="1">1st Semester</option>
-                  <option value="2">2nd Semester</option>
                   <option value="3">3rd Semester</option>
                   <option value="4">4th Semester</option>
                   <option value="5">5th Semester</option>

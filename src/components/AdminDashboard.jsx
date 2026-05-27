@@ -9,13 +9,13 @@ const initialMaterialForm = {
   link: "",
   dueDate: "",
   subject: "",
-  semester: "1",
+  semester: "3",
 };
 
 const initialSubjectForm = {
   code: "",
   name: "",
-  semester: "1",
+  semester: "3",
   credits: "3",
   instructor: "",
   description: "",
@@ -33,13 +33,13 @@ const initialContentForm = {
 
 const initialStudentProfileForm = {
   studentId: "",
-  semester: "1",
+  semester: "3",
   classCoordinatorName: "",
   mentorName: "",
 };
 
 const initialCieForm = {
-  semester: "1",
+  semester: "3",
   subject: "",
   cieNumber: "1",
   maxMarks: "50",
@@ -72,7 +72,8 @@ const contentTypeLabels = {
   "activity-alert": "Activity Alert",
 };
 
-const semesterOptions = Array.from({ length: 8 }, (_, index) => String(index + 1));
+const semesterOptions = Array.from({ length: 6 }, (_, index) => String(index + 3));
+const masterCieSemesterOptions = semesterOptions;
 
 function getAuthHeaders(token) {
   return {
@@ -139,6 +140,9 @@ function AdminDashboard({ user, token, onLogout }) {
                 <NavLink to="/admin/mentors" onClick={closeAdminSidebar}>
                   Mentor Assignment
                 </NavLink>
+                <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
+                  CIE Marks Overview
+                </NavLink>
               </>
             ) : (
               <>
@@ -193,6 +197,7 @@ function AdminDashboard({ user, token, onLogout }) {
                 <Route path="subjects" element={<SubjectsPage token={token} />} />
                 <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />
                 <Route path="mentors" element={<MentorAssignmentsPage token={token} />} />
+                <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
               </>
             ) : (
               <>
@@ -456,6 +461,233 @@ function ShowcaseContentPage({ token }) {
       description="These posts appear dynamically on the public achievements and placements pages."
       allowTypeChoice
     />
+  );
+}
+
+function MasterCieOverviewPage({ token }) {
+  const [marks, setMarks] = useState([]);
+  const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const authHeaders = getAuthHeaders(token);
+
+  useEffect(() => {
+    loadMarks();
+  }, [token]);
+
+  const loadMarks = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/cie-marks`, {
+          headers: authHeaders,
+        })
+      );
+      setMarks(data.marks || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const semesterMarks = marks.filter((mark) => {
+    const semester = Number(mark.semester);
+    return semester >= 3 && semester <= 8 && String(semester) === selectedSemester;
+  });
+
+  const subjectOptions = Array.from(
+    semesterMarks
+      .reduce((subjectMap, mark) => {
+        const subjectId = mark.subject?._id || mark.subject?.id;
+        if (subjectId && !subjectMap.has(subjectId)) {
+          subjectMap.set(subjectId, {
+            id: subjectId,
+            code: mark.subject?.code || "-",
+            name: mark.subject?.name || "Subject",
+          });
+        }
+        return subjectMap;
+      }, new Map())
+      .values()
+  ).sort((firstSubject, secondSubject) =>
+    String(firstSubject.code).localeCompare(String(secondSubject.code))
+  );
+
+  const filteredMarks =
+    selectedSemester && selectedSubject
+      ? semesterMarks.filter((mark) => {
+          const subjectId = mark.subject?._id || mark.subject?.id;
+          return subjectId === selectedSubject;
+        })
+      : [];
+
+  const overviewRows = Array.from(
+    filteredMarks
+      .reduce((rowMap, mark) => {
+        const studentId = mark.student?._id || mark.student?.id || "unknown-student";
+        const subjectId = mark.subject?._id || mark.subject?.id || "unknown-subject";
+        const key = `${studentId}-${subjectId}`;
+        const currentRow =
+          rowMap.get(key) || {
+            key,
+            semester: mark.semester,
+            studentName: mark.student?.name || "Student",
+            usn: mark.student?.usn || mark.student?.collegeEmail || "-",
+            subjectCode: mark.subject?.code || "-",
+            subjectName: mark.subject?.name || "Subject",
+            cieMarks: {},
+            totalObtained: 0,
+            totalMax: 0,
+          };
+
+        currentRow.cieMarks[mark.cieNumber] = `${mark.marksObtained}/${mark.maxMarks}`;
+        currentRow.totalObtained += Number(mark.marksObtained) || 0;
+        currentRow.totalMax += Number(mark.maxMarks) || 0;
+        rowMap.set(key, currentRow);
+        return rowMap;
+      }, new Map())
+      .values()
+  ).sort((firstRow, secondRow) => {
+    const semesterSort = Number(firstRow.semester) - Number(secondRow.semester);
+    if (semesterSort) return semesterSort;
+    const usnSort = String(firstRow.usn).localeCompare(String(secondRow.usn));
+    if (usnSort) return usnSort;
+    return String(firstRow.subjectCode).localeCompare(String(secondRow.subjectCode));
+  });
+
+  const studentCount = new Set(
+    filteredMarks.map((mark) => mark.student?._id || mark.student?.id).filter(Boolean)
+  ).size;
+  const subjectCount = new Set(
+    filteredMarks.map((mark) => mark.subject?._id || mark.subject?.id).filter(Boolean)
+  ).size;
+  const hasSelectedFilters = selectedSemester && selectedSubject;
+
+  return (
+    <section className="admin-route-panel cie-overview-layout">
+      <div className="card admin-form cie-overview-header">
+        <div>
+          <p className="eyebrow">CIE Marks Overview</p>
+          <h2>Student-wise marks from semester 3 to 8</h2>
+          <span className="admin-file-hint">
+            Review all recorded CIE marks grouped by student and subject.
+          </span>
+        </div>
+
+        <div className="cie-overview-controls">
+          <label>
+            Semester
+            <select
+              value={selectedSemester}
+              onChange={(event) => {
+                setSelectedSemester(event.target.value);
+                setSelectedSubject("");
+              }}
+            >
+              <option value="">Select semester</option>
+              {masterCieSemesterOptions.map((semester) => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Subject
+            <select
+              value={selectedSubject}
+              onChange={(event) => setSelectedSubject(event.target.value)}
+              disabled={!selectedSemester}
+            >
+              <option value="">Select subject</option>
+              {subjectOptions.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.code} - {subject.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button className="secondary-button" type="button" onClick={loadMarks} disabled={isLoading}>
+            {isLoading ? "Refreshing..." : "Refresh"}
+          </button>
+        </div>
+      </div>
+
+      <div className="cie-overview-stats">
+        <article className="card">
+          <span>Students</span>
+          <strong>{studentCount}</strong>
+        </article>
+        <article className="card">
+          <span>Subjects</span>
+          <strong>{subjectCount}</strong>
+        </article>
+        <article className="card">
+          <span>Records</span>
+          <strong>{filteredMarks.length}</strong>
+        </article>
+      </div>
+
+      {error ? <p className="form-message error">{error}</p> : null}
+
+      <div className="card cie-overview-table-card">
+        {!hasSelectedFilters ? (
+          <div className="cie-overview-empty">slelect snenster and subject</div>
+        ) : (
+          <div className="cie-sheet-table-wrap">
+            <table className="cie-sheet-table cie-overview-table">
+              <thead>
+                <tr>
+                  <th>Semester</th>
+                  <th>USN</th>
+                  <th>Student</th>
+                  <th>Subject</th>
+                  <th>CIE 1</th>
+                  <th>CIE 2</th>
+                  <th>CIE 3</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {overviewRows.length ? (
+                  overviewRows.map((row) => (
+                    <tr key={row.key}>
+                      <td>Sem {row.semester}</td>
+                      <td>{row.usn}</td>
+                      <td>{row.studentName}</td>
+                      <td>
+                        <span className="cie-overview-subject">
+                          <strong>{row.subjectCode}</strong>
+                          <span>{row.subjectName}</span>
+                        </span>
+                      </td>
+                      <td>{row.cieMarks[1] || "-"}</td>
+                      <td>{row.cieMarks[2] || "-"}</td>
+                      <td>{row.cieMarks[3] || "-"}</td>
+                      <td>
+                        {row.totalMax ? `${row.totalObtained}/${row.totalMax}` : "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="8">
+                      {isLoading ? "Loading CIE marks..." : "No CIE marks found for the selected semester and subject."}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -976,7 +1208,7 @@ function ContentManager({ token, fixedType, allowTypeChoice = false, eyebrow, ti
 function SubjectsPage({ token }) {
   const [subjectForm, setSubjectForm] = useState(initialSubjectForm);
   const [subjects, setSubjects] = useState([]);
-  const [selectedSemesterFilter, setSelectedSemesterFilter] = useState("1");
+  const [selectedSemesterFilter, setSelectedSemesterFilter] = useState("3");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -1270,7 +1502,7 @@ function CoordinatorAssignmentsPage({ token }) {
     }
   };
 
-  const coordinatorSemesters = semesterOptions.slice(2);
+  const coordinatorSemesters = semesterOptions;
   const studentsBySemester = coordinatorSemesters.map((semester) => {
     const semesterNumber = Number(semester);
     const coordinator = teachers.find((teacher) =>
@@ -1554,7 +1786,7 @@ function StudentsPage({ token }) {
   const selectStudent = (student) => {
     setForm({
       studentId: student.id,
-      semester: String(student.semester || 1),
+      semester: String(student.semester || 3),
       classCoordinatorName: student.classCoordinatorName || "",
       mentorName: student.mentorName || "",
     });
@@ -1595,7 +1827,7 @@ function StudentsPage({ token }) {
       );
       setForm({
         studentId: data.student.id,
-        semester: String(data.student.semester || 1),
+        semester: String(data.student.semester || 3),
         classCoordinatorName: data.student.classCoordinatorName || "",
         mentorName: data.student.mentorName || "",
       });
