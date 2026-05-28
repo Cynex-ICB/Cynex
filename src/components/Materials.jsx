@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API_BASE_URL, API_ORIGIN, readApiJson } from "../utils/api.js";
+import { API_BASE_URL, readApiJson, resolveApiAssetUrl } from "../utils/api.js";
 
 const categoryLabels = {
   assignment: "Assignment",
@@ -166,7 +166,7 @@ function Materials({ token, user }) {
                           ) : null}
                           {material.file?.url ? (
                             <a
-                              href={`${API_ORIGIN}${material.file.url}`}
+                              href={resolveApiAssetUrl(material.file.url)}
                               target="_blank"
                               rel="noreferrer"
                             >
@@ -214,7 +214,7 @@ function Materials({ token, user }) {
                         </a>
                       ) : null}
                       {material.file?.url ? (
-                        <a href={`${API_ORIGIN}${material.file.url}`} target="_blank" rel="noreferrer">
+                        <a href={resolveApiAssetUrl(material.file.url)} target="_blank" rel="noreferrer">
                           Download {material.file.originalName || "file"}
                         </a>
                       ) : null}

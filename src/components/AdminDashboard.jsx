@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
-import { API_BASE_URL, API_ORIGIN, readApiJson } from "../utils/api.js";
+import { API_BASE_URL, readApiJson, resolveApiAssetUrl } from "../utils/api.js";
 
 const initialMaterialForm = {
   title: "",
@@ -1977,7 +1977,7 @@ function StudentAccountsPage({ token }) {
               type="email"
               value={form.collegeEmail}
               onChange={updateField}
-              placeholder="4ALXXIC0XX@aiet.org.in"
+              placeholder="student@aiet.org.in"
               required
             />
           </label>
@@ -1989,7 +1989,7 @@ function StudentAccountsPage({ token }) {
               type="text"
               value={form.usn}
               onChange={updateField}
-              placeholder="4ALXXIC0XX"
+              placeholder="Student USN"
               required
             />
           </label>
@@ -2528,7 +2528,7 @@ function ContentList({ eyebrow, title, items, getTypeLabel, onDelete }) {
                 </a>
               ) : null}
               {item.file?.url ? (
-                <a href={`${API_ORIGIN}${item.file.url}`} target="_blank" rel="noreferrer">
+                <a href={resolveApiAssetUrl(item.file.url)} target="_blank" rel="noreferrer">
                   Download {item.file.originalName || "file"}
                 </a>
               ) : null}

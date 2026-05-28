@@ -23,28 +23,11 @@ const modeDetails = {
   },
 };
 
-const STUDENT_EMAIL_ID_PATTERN = /^4AL\d{2}IC0\d{2}$/i;
-const EMAIL_PATTERN_EXEMPTIONS = (
-  import.meta.env.VITE_EMAIL_PATTERN_EXEMPT_EMAIL ||
-  import.meta.env.VITE_EMAIL_PATTERN_EXEMPT_EMAILS ||
-  ""
-)
-  .split(/[,;\s]+/)
-  .map((email) => email.trim().replace(/^["']|["']$/g, "").toLowerCase())
-  .filter(Boolean);
-const EMAIL_PATTERN_ERROR = "College email ID must match the 4ALXXIC0XX pattern.";
 const initialPasswordVisibility = {
   password: false,
   newPassword: false,
   confirmPassword: false,
 };
-
-function isAllowedCollegeEmail(email) {
-  const normalizedEmail = email.trim().toLowerCase();
-  const emailId = normalizedEmail.split("@")[0] || "";
-
-  return EMAIL_PATTERN_EXEMPTIONS.includes(normalizedEmail) || STUDENT_EMAIL_ID_PATTERN.test(emailId);
-}
 
 function getModeFromPath(pathname) {
   if (pathname === "/reset") {
@@ -150,19 +133,6 @@ function Auth({ onAuthenticated }) {
     return readApiJson(response);
   };
 
-  const canUseEmailForLogin = async (email) => {
-    if (isAllowedCollegeEmail(email)) {
-      return true;
-    }
-
-    const data = await callApi("/auth/email-access", {
-      method: "POST",
-      body: JSON.stringify({ collegeEmail: email }),
-    });
-
-    return Boolean(data.allowed);
-  };
-
   const togglePasswordVisibility = (fieldName) => {
     setPasswordVisibility((currentVisibility) => ({
       ...currentVisibility,
@@ -176,11 +146,6 @@ function Auth({ onAuthenticated }) {
     setIsLoading(true);
 
     try {
-      if (mode === "login" && !(await canUseEmailForLogin(fields.collegeEmail))) {
-        setError(EMAIL_PATTERN_ERROR);
-        return;
-      }
-
       if (mode === "login") {
         const data = await callApi("/auth/login", {
           method: "POST",
@@ -259,7 +224,7 @@ function Auth({ onAuthenticated }) {
               <input
                 name="collegeEmail"
                 type="email"
-                placeholder="4ALXXIC0XX@aiet.org.in"
+                placeholder="name@aiet.org.in"
                 value={fields.collegeEmail}
                 onChange={updateField}
                 required

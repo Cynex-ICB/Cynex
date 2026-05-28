@@ -3,6 +3,14 @@ export const API_BASE_URL =
 
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
+export function resolveApiAssetUrl(url = "") {
+  if (!url) {
+    return "";
+  }
+
+  return /^https?:\/\//i.test(url) ? url : `${API_ORIGIN}${url}`;
+}
+
 export async function readApiJson(response) {
   const contentType = response.headers.get("content-type") || "";
 
