@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
-import { API_BASE_URL, readApiJson, resolveApiAssetUrl } from "../utils/api.js";
+import { API_BASE_URL, downloadApiFile, readApiJson } from "../utils/api.js";
 
 const initialMaterialForm = {
   title: "",
@@ -481,6 +481,7 @@ function AcademicContentPage({ token }) {
         items={materials}
         getTypeLabel={(item) => categoryLabels[item.category]}
         onDelete={deleteMaterial}
+        token={token}
       />
     </section>
   );
@@ -1847,6 +1848,7 @@ function StudentAccountsPage({ token }) {
   const [manualError, setManualError] = useState("");
   const [bulkStatus, setBulkStatus] = useState("");
   const [bulkError, setBulkError] = useState("");
+  const [selectedStudentSemester, setSelectedStudentSemester] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const bulkFileInputRef = useRef(null);
@@ -1943,6 +1945,11 @@ function StudentAccountsPage({ token }) {
       setIsImporting(false);
     }
   };
+
+  const visibleStudents =
+    selectedStudentSemester === "all"
+      ? students
+      : students.filter((student) => String(student.semester) === selectedStudentSemester);
 
   return (
     <section className="admin-grid admin-route-panel">
@@ -2083,9 +2090,29 @@ function StudentAccountsPage({ token }) {
           <h2>Students with portal access</h2>
         </div>
 
+        <div className="card student-filter-card">
+          <label>
+            Filter by semester
+            <select
+              value={selectedStudentSemester}
+              onChange={(event) => setSelectedStudentSemester(event.target.value)}
+            >
+              <option value="all">All semesters</option>
+              {semesterOptions.map((semester) => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span>
+            Showing {visibleStudents.length} of {students.length} student account(s).
+          </span>
+        </div>
+
         <div className="student-list">
-          {students.length ? (
-            students.map((student) => (
+          {visibleStudents.length ? (
+            visibleStudents.map((student) => (
               <article className="card student-card" key={student.id}>
                 <div className="student-card-top">
                   <span>Semester {student.semester}</span>
@@ -2099,8 +2126,8 @@ function StudentAccountsPage({ token }) {
             ))
           ) : (
             <div className="card empty-state">
-              <h3>No student accounts yet</h3>
-              <p>Create student access from the form.</p>
+              <h3>No student accounts found</h3>
+              <p>Create student access from the form or change the semester filter.</p>
             </div>
           )}
         </div>
@@ -2492,7 +2519,21 @@ function StudentsPage({ token }) {
   );
 }
 
-function ContentList({ eyebrow, title, items, getTypeLabel, onDelete }) {
+function ContentList({ eyebrow, title, items, getTypeLabel, onDelete, token }) {
+  const downloadContentFile = async (item) => {
+    if (!token) return;
+
+    try {
+      await downloadApiFile(
+        `${API_BASE_URL}/materials/${item._id}/file`,
+        token,
+        item.file?.originalName || "material-file"
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="admin-posts">
       <div className="admin-section-heading">
@@ -2528,9 +2569,14 @@ function ContentList({ eyebrow, title, items, getTypeLabel, onDelete }) {
                 </a>
               ) : null}
               {item.file?.url ? (
-                <a href={resolveApiAssetUrl(item.file.url)} target="_blank" rel="noreferrer">
+                <button
+                  className="download-link-button"
+                  type="button"
+                  onClick={() => downloadContentFile(item)}
+                  disabled={!token}
+                >
                   Download {item.file.originalName || "file"}
-                </a>
+                </button>
               ) : null}
             </article>
           ))

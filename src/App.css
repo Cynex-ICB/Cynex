@@ -1156,6 +1156,24 @@ h4 {
   font-weight: 900;
 }
 
+.download-link-button {
+  width: fit-content;
+  border: 0;
+  padding: 0;
+  color: var(--color-accent-dark);
+  font: inherit;
+  font-weight: 900;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.download-link-button:hover,
+.download-link-button:focus-visible {
+  color: var(--color-accent);
+  outline: none;
+}
+
 .material-card a+a {
   margin-top: -0.35rem;
 }
@@ -1836,6 +1854,37 @@ h4 {
   gap: 1rem;
 }
 
+.student-filter-card {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: end;
+  padding: 1rem;
+}
+
+.student-filter-card label {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--color-ink);
+  font-weight: 850;
+}
+
+.student-filter-card select {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  color: var(--color-ink);
+  font: inherit;
+  background: #ffffff;
+}
+
+.student-filter-card span {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .subject-card,
 .student-card {
   display: grid;
@@ -2038,6 +2087,10 @@ h4 {
   .cie-overview-stats {
     grid-template-columns: repeat(3, minmax(130px, 1fr));
     overflow-x: auto;
+  }
+
+  .student-filter-card {
+    grid-template-columns: 1fr;
   }
 
   .admin-shell {

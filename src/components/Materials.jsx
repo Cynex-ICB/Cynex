@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API_BASE_URL, readApiJson, resolveApiAssetUrl } from "../utils/api.js";
+import { API_BASE_URL, downloadApiFile, readApiJson } from "../utils/api.js";
 
 const categoryLabels = {
   assignment: "Assignment",
@@ -54,6 +54,18 @@ function Materials({ token, user }) {
       setSubjects(data.subjects || []);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const downloadMaterialFile = async (material) => {
+    try {
+      await downloadApiFile(
+        `${API_BASE_URL}/materials/${material._id}/file`,
+        token,
+        material.file?.originalName || "material-file"
+      );
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -165,13 +177,13 @@ function Materials({ token, user }) {
                             </a>
                           ) : null}
                           {material.file?.url ? (
-                            <a
-                              href={resolveApiAssetUrl(material.file.url)}
-                              target="_blank"
-                              rel="noreferrer"
+                            <button
+                              className="download-link-button"
+                              type="button"
+                              onClick={() => downloadMaterialFile(material)}
                             >
                               Download {material.file.originalName || "file"}
-                            </a>
+                            </button>
                           ) : null}
                         </article>
                       ))}
@@ -214,9 +226,13 @@ function Materials({ token, user }) {
                         </a>
                       ) : null}
                       {material.file?.url ? (
-                        <a href={resolveApiAssetUrl(material.file.url)} target="_blank" rel="noreferrer">
+                        <button
+                          className="download-link-button"
+                          type="button"
+                          onClick={() => downloadMaterialFile(material)}
+                        >
                           Download {material.file.originalName || "file"}
-                        </a>
+                        </button>
                       ) : null}
                     </article>
                   ))}
