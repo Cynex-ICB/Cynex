@@ -79,6 +79,15 @@ body {
   html {
     scroll-behavior: auto;
   }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
 }
 
 a {
@@ -1314,6 +1323,7 @@ h4 {
 }
 
 .admin-shell {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
   gap: 1.25rem;
@@ -1323,7 +1333,9 @@ h4 {
 }
 
 .admin-content {
+  grid-column: 2;
   min-width: 0;
+  animation: admin-fade-up 420ms ease both;
 }
 
 .admin-header {
@@ -1337,6 +1349,7 @@ h4 {
   padding: clamp(1.1rem, 3vw, 1.6rem);
   color: #ffffff;
   background: linear-gradient(135deg, var(--color-navy), var(--color-navy-soft));
+  animation: admin-fade-up 460ms ease both;
 }
 
 .admin-sidebar-toggle {
@@ -1348,17 +1361,37 @@ h4 {
 }
 
 .admin-sidebar {
-  position: sticky;
-  top: 1rem;
+  position: fixed;
+  top: var(--sidebar-page-offset);
+  left: clamp(1rem, 4vw, 3rem);
+  width: 280px;
+  align-self: start;
+  z-index: 20;
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
-  min-height: calc(100svh - var(--sidebar-page-offset) - 2rem);
+  height: calc(100svh - var(--sidebar-page-offset) - 1rem);
+  min-height: calc(100svh - var(--sidebar-page-offset) - 1rem);
+  max-height: calc(100svh - var(--sidebar-page-offset) - 1rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border-radius: 8px;
   padding: 1rem;
   color: #ffffff;
   background: rgba(18, 35, 61, 0.98);
   box-shadow: var(--shadow-card);
+  animation: admin-sidebar-in 420ms ease both;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .admin-sidebar-brand {
@@ -1392,6 +1425,7 @@ h4 {
 }
 
 .admin-dashboard-nav a {
+  position: relative;
   display: flex;
   align-items: center;
   min-height: 44px;
@@ -1405,12 +1439,34 @@ h4 {
     padding-left 180ms ease;
 }
 
+.admin-dashboard-nav a::before {
+  content: "";
+  width: 0;
+  height: 6px;
+  border-radius: 999px;
+  margin-right: 0;
+  background: var(--color-accent);
+  opacity: 0;
+  transition:
+    width 180ms ease,
+    margin-right 180ms ease,
+    opacity 180ms ease;
+}
+
 .admin-dashboard-nav a:hover,
 .admin-dashboard-nav a:focus-visible,
 .admin-dashboard-nav a.active {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.12);
   padding-left: 1.1rem;
+}
+
+.admin-dashboard-nav a:hover::before,
+.admin-dashboard-nav a:focus-visible::before,
+.admin-dashboard-nav a.active::before {
+  width: 6px;
+  margin-right: 0.55rem;
+  opacity: 1;
 }
 
 .admin-sidebar-actions {
@@ -1466,6 +1522,43 @@ h4 {
 
 .admin-route-panel {
   margin-top: 0;
+  animation: admin-fade-up 520ms ease both;
+}
+
+@keyframes admin-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-sidebar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes admin-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .cie-sheet-layout {
@@ -1611,6 +1704,7 @@ h4 {
   display: grid;
   gap: 1rem;
   padding: clamp(1rem, 3vw, 1.4rem);
+  animation: admin-fade-up 520ms ease both;
 }
 
 .admin-form h2,
@@ -1641,6 +1735,19 @@ h4 {
   color: var(--color-ink);
   font: inherit;
   background: #ffffff;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus {
+  border-color: rgba(185, 130, 47, 0.78);
+  box-shadow: 0 0 0 4px rgba(185, 130, 47, 0.14);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .admin-form input[type="file"] {
@@ -1669,6 +1776,7 @@ h4 {
 .admin-posts {
   display: grid;
   gap: 1rem;
+  animation: admin-fade-up 560ms ease both;
 }
 
 .admin-section-heading {
@@ -1691,6 +1799,7 @@ h4 {
   display: grid;
   gap: 0.65rem;
   padding: 1.15rem;
+  animation: admin-card-in 420ms ease both;
 }
 
 .subject-card h3,
@@ -1963,9 +2072,11 @@ h4 {
     width: min(84vw, 330px);
     height: 100svh;
     min-height: 0;
+    max-height: none;
     border-radius: 0 8px 8px 0;
     padding: 5rem 1rem 1.25rem;
     overflow-y: auto;
+    animation: none;
     transform: translateX(-105%);
     visibility: hidden;
     transition: transform 220ms ease;

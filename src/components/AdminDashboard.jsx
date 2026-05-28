@@ -4,7 +4,7 @@ import { API_BASE_URL, API_ORIGIN, readApiJson } from "../utils/api.js";
 
 const initialMaterialForm = {
   title: "",
-  category: "Notes",
+  category: "note",
   description: "",
   link: "",
   dueDate: "",
