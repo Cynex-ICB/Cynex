@@ -1624,14 +1624,24 @@ function TeacherAdminsPage({ token }) {
 
   const loadAdmins = async () => {
     try {
-      const data = await readJson(
-        await fetch(`${API_BASE_URL}/users/admins`, {
-          headers: authHeaders,
-        })
-      );
-      setAdmins(data.admins || []);
+      try {
+        const data = await readJson(
+          await fetch(`${API_BASE_URL}/users/admins`, {
+            headers: authHeaders,
+          })
+        );
+        setAdmins(data.admins || []);
+        return;
+      } catch (adminRouteError) {
+        const data = await readJson(
+          await fetch(`${API_BASE_URL}/users/teachers`, {
+            headers: authHeaders,
+          })
+        );
+        setAdmins(data.teachers || []);
+      }
     } catch (loadError) {
-      setError(loadError.message);
+      setError("Could not load teacher admins. Please deploy the latest backend routes and try again.");
     }
   };
 
@@ -1665,7 +1675,11 @@ function TeacherAdminsPage({ token }) {
       setForm(initialTeacherAdminForm);
       setStatus("Teacher admin created. Share the temporary password directly with the teacher.");
     } catch (submitError) {
-      setError(submitError.message);
+      setError(
+        submitError.message.includes("Expected JSON")
+          ? "The backend does not have the teacher admin creation route yet. Deploy the latest backend and try again."
+          : submitError.message
+      );
     } finally {
       setIsLoading(false);
     }
