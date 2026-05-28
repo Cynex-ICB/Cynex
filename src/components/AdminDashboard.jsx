@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { API_BASE_URL, API_ORIGIN, readApiJson } from "../utils/api.js";
-import { AdminAptitude } from "./AptitudePlatform.jsx";
 
 const initialMaterialForm = {
   title: "",
@@ -65,6 +64,18 @@ const initialTeacherAdminForm = {
   teacherId: "",
   role: "admin",
   password: "",
+};
+
+const initialStudentAccountForm = {
+  name: "",
+  collegeEmail: "",
+  usn: "",
+  semester: "3",
+  password: "",
+};
+
+const initialStudentBulkForm = {
+  semester: "3",
 };
 
 const categoryLabels = {
@@ -157,6 +168,9 @@ function AdminDashboard({ user, token, onLogout }) {
                 <NavLink to="/admin/admins" onClick={closeAdminSidebar}>
                   Teacher Admins
                 </NavLink>
+                <NavLink to="/admin/student-accounts" onClick={closeAdminSidebar}>
+                  Student Accounts
+                </NavLink>
                 <NavLink to="/admin/coordinators" onClick={closeAdminSidebar}>
                   Class Coordinators
                 </NavLink>
@@ -165,9 +179,6 @@ function AdminDashboard({ user, token, onLogout }) {
                 </NavLink>
                 <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
                   CIE Marks Overview
-                </NavLink>
-                <NavLink to="/admin/aptitude" onClick={closeAdminSidebar}>
-                  Aptitude Tests
                 </NavLink>
               </>
             ) : (
@@ -183,9 +194,6 @@ function AdminDashboard({ user, token, onLogout }) {
                 </NavLink>
                 <NavLink to="/admin/cie-marks" onClick={closeAdminSidebar}>
                   CIE Marks
-                </NavLink>
-                <NavLink to="/admin/aptitude" onClick={closeAdminSidebar}>
-                  Aptitude Tests
                 </NavLink>
               </>
             )}
@@ -225,10 +233,10 @@ function AdminDashboard({ user, token, onLogout }) {
               <>
                 <Route path="subjects" element={<SubjectsPage token={token} />} />
                 <Route path="admins" element={<TeacherAdminsPage token={token} />} />
+                <Route path="student-accounts" element={<StudentAccountsPage token={token} />} />
                 <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />
                 <Route path="mentors" element={<MentorAssignmentsPage token={token} />} />
                 <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
-                <Route path="aptitude" element={<AdminAptitude token={token} />} />
               </>
             ) : (
               <>
@@ -236,7 +244,6 @@ function AdminDashboard({ user, token, onLogout }) {
                 <Route path="activity-alerts" element={<ActivityAlertsPage token={token} />} />
                 <Route path="showcase" element={<ShowcaseContentPage token={token} />} />
                 <Route path="cie-marks" element={<CieMarksPage token={token} />} />
-                <Route path="aptitude" element={<AdminAptitude token={token} />} />
               </>
             )}
             <Route path="*" element={<Navigate to={defaultRoute} replace />} />
@@ -1831,6 +1838,277 @@ function TeacherAdminsPage({ token }) {
   );
 }
 
+function StudentAccountsPage({ token }) {
+  const [form, setForm] = useState(initialStudentAccountForm);
+  const [bulkForm, setBulkForm] = useState(initialStudentBulkForm);
+  const [bulkFile, setBulkFile] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [manualStatus, setManualStatus] = useState("");
+  const [manualError, setManualError] = useState("");
+  const [bulkStatus, setBulkStatus] = useState("");
+  const [bulkError, setBulkError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const bulkFileInputRef = useRef(null);
+  const authHeaders = getAuthHeaders(token);
+
+  useEffect(() => {
+    loadStudents();
+  }, [token]);
+
+  const loadStudents = async () => {
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/students`, {
+          headers: authHeaders,
+        })
+      );
+      setStudents(data.students || []);
+    } catch (loadError) {
+      setManualError(loadError.message);
+    }
+  };
+
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((currentForm) => ({
+      ...currentForm,
+      [name]: name === "usn" ? value.toUpperCase() : value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setManualStatus("");
+    setManualError("");
+    setIsLoading(true);
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/students`, {
+          method: "POST",
+          headers: {
+            ...authHeaders,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        })
+      );
+
+      setStudents((currentStudents) => [data.student, ...currentStudents]);
+      setForm(initialStudentAccountForm);
+      setManualStatus(data.warning || "Student account created and notification email sent.");
+    } catch (submitError) {
+      setManualError(submitError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBulkSubmit = async (event) => {
+    event.preventDefault();
+    setBulkStatus("");
+    setBulkError("");
+
+    if (!bulkFile) {
+      setBulkError("Upload an Excel file before importing students.");
+      return;
+    }
+
+    setIsImporting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("semester", bulkForm.semester);
+      formData.append("file", bulkFile);
+
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/students/bulk`, {
+          method: "POST",
+          headers: authHeaders,
+          body: formData,
+        })
+      );
+
+      setStudents((currentStudents) => [...(data.students || []), ...currentStudents]);
+      setBulkForm(initialStudentBulkForm);
+      setBulkFile(null);
+      if (bulkFileInputRef.current) bulkFileInputRef.current.value = "";
+
+      const skippedText = data.skipped ? ` ${data.skipped} row(s) skipped.` : "";
+      setBulkStatus(`Created ${data.created || 0} student account(s).${skippedText}`);
+    } catch (submitError) {
+      setBulkError(submitError.message);
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  return (
+    <section className="admin-grid admin-route-panel">
+      <div className="student-account-forms">
+        <form className="card admin-form" onSubmit={handleSubmit}>
+          <div>
+            <p className="eyebrow">Manual Addition</p>
+            <h2>Create one student account</h2>
+            <span className="admin-file-hint">
+              Add a student account with USN, semester, and a temporary password.
+            </span>
+          </div>
+
+          <label>
+            Student Name
+            <input
+              name="name"
+              type="text"
+              value={form.name}
+              onChange={updateField}
+              placeholder="Student full name"
+              minLength="2"
+              maxLength="80"
+              required
+            />
+          </label>
+
+          <label>
+            College Email
+            <input
+              name="collegeEmail"
+              type="email"
+              value={form.collegeEmail}
+              onChange={updateField}
+              placeholder="4ALXXIC0XX@aiet.org.in"
+              required
+            />
+          </label>
+
+          <label>
+            USN
+            <input
+              name="usn"
+              type="text"
+              value={form.usn}
+              onChange={updateField}
+              placeholder="4ALXXIC0XX"
+              required
+            />
+          </label>
+
+          <label>
+            Semester
+            <select name="semester" value={form.semester} onChange={updateField} required>
+              {semesterOptions.map((semester) => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Temporary Password
+            <input
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={updateField}
+              placeholder="At least 8 characters"
+              minLength="8"
+              required
+            />
+          </label>
+
+          {manualStatus ? <p className="form-message success">{manualStatus}</p> : null}
+          {manualError ? <p className="form-message error">{manualError}</p> : null}
+
+          <button className="primary-button admin-submit" type="submit" disabled={isLoading}>
+            {isLoading ? "Creating..." : "Create Student Account"}
+          </button>
+        </form>
+
+        <form className="card admin-form" onSubmit={handleBulkSubmit}>
+          <div>
+            <p className="eyebrow">Excel Import</p>
+            <h2>Add students in bulk</h2>
+            <span className="admin-file-hint">
+              Upload an Excel file with columns: student name, usn, emailid.
+              Temporary password will be DeptICB@USN for every student.
+            </span>
+          </div>
+
+          <label>
+            Semester
+            <select
+              name="semester"
+              value={bulkForm.semester}
+              onChange={(event) =>
+                setBulkForm((currentForm) => ({ ...currentForm, semester: event.target.value }))
+              }
+              required
+            >
+              {semesterOptions.map((semester) => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Excel File
+            <input
+              ref={bulkFileInputRef}
+              type="file"
+              accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              onChange={(event) => setBulkFile(event.target.files?.[0] || null)}
+              required
+            />
+            <span className="admin-file-hint">
+              {bulkFile ? bulkFile.name : "Use the exact column names: student name, usn, emailid."}
+            </span>
+          </label>
+
+          {bulkStatus ? <p className="form-message success">{bulkStatus}</p> : null}
+          {bulkError ? <p className="form-message error">{bulkError}</p> : null}
+
+          <button className="primary-button admin-submit" type="submit" disabled={isImporting}>
+            {isImporting ? "Importing..." : "Import Student Accounts"}
+          </button>
+        </form>
+      </div>
+
+      <div className="admin-posts">
+        <div className="admin-section-heading">
+          <p className="eyebrow">Student Accounts</p>
+          <h2>Students with portal access</h2>
+        </div>
+
+        <div className="student-list">
+          {students.length ? (
+            students.map((student) => (
+              <article className="card student-card" key={student.id}>
+                <div className="student-card-top">
+                  <span>Semester {student.semester}</span>
+                  <small>{student.usn || "USN not set"}</small>
+                </div>
+                <h3>{student.name}</h3>
+                <small>{student.collegeEmail}</small>
+                <p>Class Coordinator: {student.classCoordinatorName || "Not assigned"}</p>
+                <p>Mentor: {student.mentorName || "Not assigned"}</p>
+              </article>
+            ))
+          ) : (
+            <div className="card empty-state">
+              <h3>No student accounts yet</h3>
+              <p>Create student access from the form.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function MentorAssignmentsPage({ token }) {
   const [form, setForm] = useState(initialMentorForm);
   const [teachers, setTeachers] = useState([]);
@@ -2205,7 +2483,7 @@ function StudentsPage({ token }) {
           ) : (
             <div className="card empty-state">
               <h3>No students found</h3>
-              <p>Students will appear here after signup.</p>
+              <p>Students will appear here after master admin creates accounts.</p>
             </div>
           )}
         </div>

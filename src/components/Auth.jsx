@@ -4,14 +4,10 @@ import aietLogo from "../assets/aiet-logo.png";
 import { API_BASE_URL, readApiJson } from "../utils/api.js";
 
 const initialFields = {
-  name: "",
   collegeEmail: "",
   password: "",
   newPassword: "",
   confirmPassword: "",
-  usn: "",
-  semester: "3",
-  otp: "",
 };
 
 const modeDetails = {
@@ -19,11 +15,6 @@ const modeDetails = {
     eyebrow: "Welcome back",
     title: "Login to your portal",
     note: "Please login to continue.",
-  },
-  signup: {
-    eyebrow: "New account",
-    title: "Create your portal access",
-    note: "Set up a secure account with your email.",
   },
   reset: {
     eyebrow: "Password help",
@@ -56,10 +47,6 @@ function isAllowedCollegeEmail(email) {
 }
 
 function getModeFromPath(pathname) {
-  if (pathname === "/signup") {
-    return "signup";
-  }
-
   if (pathname === "/reset") {
     return "reset";
   }
@@ -102,7 +89,6 @@ function Auth({ onAuthenticated }) {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignupOtpPending, setIsSignupOtpPending] = useState(false);
   const [passwordVisibility, setPasswordVisibility] = useState(initialPasswordVisibility);
 
   const resetToken = useMemo(() => {
@@ -142,13 +128,11 @@ function Auth({ onAuthenticated }) {
   const goToMode = (nextMode) => {
     const nextPath = {
       login: "/login",
-      signup: "/signup",
       reset: "/reset",
     }[nextMode];
 
     navigate(nextPath);
     setMode(nextMode);
-    setIsSignupOtpPending(false);
     setFields(initialFields);
     setPasswordVisibility(initialPasswordVisibility);
     clearMessages();
@@ -192,42 +176,9 @@ function Auth({ onAuthenticated }) {
     setIsLoading(true);
 
     try {
-      if (mode === "signup" && !isSignupOtpPending && !isAllowedCollegeEmail(fields.collegeEmail)) {
-        setError(EMAIL_PATTERN_ERROR);
-        return;
-      }
-
       if (mode === "login" && !(await canUseEmailForLogin(fields.collegeEmail))) {
         setError(EMAIL_PATTERN_ERROR);
         return;
-      }
-
-      if (mode === "signup" && !isSignupOtpPending) {
-        const data = await callApi("/auth/signup", {
-          method: "POST",
-          body: JSON.stringify({
-            name: fields.name,
-            collegeEmail: fields.collegeEmail,
-            password: fields.password,
-            usn: fields.usn,
-            semester: fields.semester,
-          }),
-        });
-        setIsSignupOtpPending(true);
-        setStatus(data.message || "OTP sent to your college email.");
-        return;
-      }
-
-      if (mode === "signup" && isSignupOtpPending) {
-        const data = await callApi("/auth/verify-signup", {
-          method: "POST",
-          body: JSON.stringify({
-            collegeEmail: fields.collegeEmail,
-            otp: fields.otp,
-          }),
-        });
-        saveSession(data);
-        setStatus("Account verified successfully.");
       }
 
       if (mode === "login") {
@@ -266,7 +217,6 @@ function Auth({ onAuthenticated }) {
 
       setFields(initialFields);
       setPasswordVisibility(initialPasswordVisibility);
-      setIsSignupOtpPending(false);
     } catch (apiError) {
       setError(apiError.message);
     } finally {
@@ -274,24 +224,14 @@ function Auth({ onAuthenticated }) {
     }
   };
 
-  const showName = mode === "signup" && !isSignupOtpPending;
-  const showPassword = mode === "login" || (mode === "signup" && !isSignupOtpPending);
+  const showPassword = mode === "login";
   const showEmail = mode !== "reset" || !resetToken;
   const showNewPassword = mode === "reset" && resetToken;
-  const showSignupDetails = mode === "signup" && !isSignupOtpPending;
-  const showSignupOtp = mode === "signup" && isSignupOtpPending;
   const submitLabel = {
     login: "Log In",
-    signup: isSignupOtpPending ? "Verify OTP" : "Send OTP",
     reset: resetToken ? "Reset Password" : "Send Reset Link",
   }[mode];
-  const currentMode = isSignupOtpPending
-    ? {
-        eyebrow: "Verify email",
-        title: "Enter your OTP",
-        note: "We sent a 6-digit code to your college email.",
-      }
-    : modeDetails[mode];
+  const currentMode = modeDetails[mode];
 
   return (
     <section className="section auth-section" id="login">
@@ -313,22 +253,7 @@ function Auth({ onAuthenticated }) {
             <span>{currentMode.note}</span>
           </div>
 
-          {showName ? (
-            <label className="auth-field">
-              <span>Name</span>
-              <input
-                name="name"
-                type="text"
-                placeholder="Enter your full name"
-                value={fields.name}
-                onChange={updateField}
-                minLength="2"
-                required
-              />
-            </label>
-          ) : null}
-
-          {showEmail && !showSignupOtp ? (
+          {showEmail ? (
             <label className="auth-field">
               <span>College Email</span>
               <input
@@ -340,29 +265,6 @@ function Auth({ onAuthenticated }) {
                 required
               />
             </label>
-          ) : null}
-
-          {showSignupOtp ? (
-            <>
-              <label className="auth-field">
-                <span>College Email</span>
-                <input name="collegeEmail" type="email" value={fields.collegeEmail} readOnly />
-              </label>
-
-              <label className="auth-field">
-                <span>Email OTP</span>
-                <input
-                  name="otp"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]{6}"
-                  placeholder="Enter 6-digit OTP"
-                  value={fields.otp}
-                  onChange={updateField}
-                  required
-                />
-              </label>
-            </>
           ) : null}
 
           {showPassword ? (
@@ -377,40 +279,7 @@ function Auth({ onAuthenticated }) {
             />
           ) : null}
 
-          {showSignupDetails ? (
-            <>
-              <label className="auth-field">
-                <span>USN</span>
-                <input
-                  name="usn"
-                  type="text"
-                  placeholder="1SE23CSxxx"
-                  value={fields.usn}
-                  onChange={updateField}
-                  required
-                />
-              </label>
-
-              <label className="auth-field">
-                <span>Semester</span>
-                <select
-                  name="semester"
-                  value={fields.semester}
-                  onChange={updateField}
-                  required
-                >
-                  <option value="3">3rd Semester</option>
-                  <option value="4">4th Semester</option>
-                  <option value="5">5th Semester</option>
-                  <option value="6">6th Semester</option>
-                  <option value="7">7th Semester</option>
-                  <option value="8">8th Semester</option>
-                </select>
-              </label>
-            </>
-          ) : null}
-
-          {mode === "login" || showSignupDetails ? (
+          {mode === "login" ? (
             <p className="auth-helper-row">
               <span>Forgot your password?</span>
               <button type="button" onClick={() => goToMode("reset")}>
@@ -449,42 +318,6 @@ function Auth({ onAuthenticated }) {
           <button className="primary-button auth-submit" type="submit" disabled={isLoading}>
             {isLoading ? "Please wait..." : submitLabel}
           </button>
-
-          {mode === "login" ? (
-            <p className="auth-switch">
-              Don&apos;t have account?{" "}
-              <button type="button" onClick={() => goToMode("signup")}>
-                Create one
-              </button>
-            </p>
-          ) : null}
-
-          {mode === "signup" ? (
-            <p className="auth-switch">
-              {isSignupOtpPending ? (
-                <>
-                  Need to edit details?{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSignupOtpPending(false);
-                      setFields((currentFields) => ({ ...currentFields, otp: "" }));
-                      clearMessages();
-                    }}
-                  >
-                    Go back
-                  </button>
-                </>
-              ) : (
-                <>
-                  Already registered?{" "}
-                  <button type="button" onClick={() => goToMode("login")}>
-                    Login instead
-                  </button>
-                </>
-              )}
-            </p>
-          ) : null}
 
           {mode === "reset" && !resetToken ? (
             <p className="auth-switch">

@@ -7,7 +7,6 @@ const navLinks = [
   { label: 'Achievements', to: '/achievements' },
   { label: 'Placements', to: '/placements-internships' },
   { label: 'Materials', to: '/materials' },
-  { label: 'Aptitude', to: '/aptitude' },
   { label: 'Profile', to: '/profile' },
   { label: 'Contact Us', to: '/contact' },
  
