@@ -89,6 +89,17 @@ function getAuthHeaders(token) {
   };
 }
 
+function formatSemesterList(semesters = []) {
+  const uniqueSemesters = Array.from(new Set(semesters))
+    .map(Number)
+    .filter(Boolean)
+    .sort((first, second) => first - second);
+
+  return uniqueSemesters.length
+    ? uniqueSemesters.map((semester) => `Semester ${semester}`).join(", ")
+    : "Not assigned";
+}
+
 async function readJson(response) {
   return readApiJson(response);
 }
@@ -1779,6 +1790,17 @@ function TeacherAdminsPage({ token }) {
                 </div>
                 <h3>{admin.name}</h3>
                 <small>{admin.collegeEmail}</small>
+                {admin.teacherId ? <small>Teacher Employee ID: {admin.teacherId}</small> : null}
+                <p>Class Coordinator For: {formatSemesterList(admin.coordinatorSemesters)}</p>
+                {(admin.mentorAssignments || []).length ? (
+                  admin.mentorAssignments.map((assignment, index) => (
+                    <p key={`${assignment.startUsn}-${assignment.endUsn}-${index}`}>
+                      Mentor Range: {assignment.startUsn} to {assignment.endUsn}
+                    </p>
+                  ))
+                ) : (
+                  <p>Mentor Range: Not assigned</p>
+                )}
               </article>
             ))
           ) : (
@@ -1930,6 +1952,7 @@ function MentorAssignmentsPage({ token }) {
             <article className="card student-card" key={teacher.id}>
               <h3>{teacher.name}</h3>
               {teacher.teacherId ? <small>ID: {teacher.teacherId}</small> : null}
+              <p>Class Coordinator For: {formatSemesterList(teacher.coordinatorSemesters)}</p>
               {(teacher.mentorAssignments || []).length ? (
                 teacher.mentorAssignments.map((assignment, index) => (
                   <p key={`${assignment.startUsn}-${assignment.endUsn}-${index}`}>

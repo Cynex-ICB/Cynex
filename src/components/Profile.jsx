@@ -5,6 +5,23 @@ function profileValue(value) {
   return value ? value : "Not assigned yet";
 }
 
+function formatSemesterList(semesters = []) {
+  const uniqueSemesters = Array.from(new Set(semesters))
+    .map(Number)
+    .filter(Boolean)
+    .sort((first, second) => first - second);
+
+  return uniqueSemesters.length
+    ? uniqueSemesters.map((semester) => `Semester ${semester}`).join(", ")
+    : "Not assigned yet";
+}
+
+function formatMentorRanges(assignments = []) {
+  return assignments.length
+    ? assignments.map((assignment) => `${assignment.startUsn} to ${assignment.endUsn}`).join(", ")
+    : "Not assigned yet";
+}
+
 function groupMarksBySubject(marks) {
   return marks.reduce((groups, mark) => {
     const subjectId = mark.subject?._id || mark.subject?.id || "unknown";
@@ -86,6 +103,7 @@ function Profile({ token, user, onUserUpdate }) {
   }, [token, onUserUpdate]);
 
   const isStudent = profile?.role === "student";
+  const isTeacher = ["admin", "master-admin"].includes(profile?.role);
   const marksBySubject = Object.values(groupMarksBySubject(cieMarks));
 
   return (
@@ -135,6 +153,22 @@ function Profile({ token, user, onUserUpdate }) {
               <div>
                 <dt>Semester</dt>
                 <dd>Semester {profile?.semester || 3}</dd>
+              </div>
+            </>
+          ) : null}
+          {isTeacher ? (
+            <>
+              <div>
+                <dt>Teacher Employee ID</dt>
+                <dd>{profileValue(profile?.teacherId)}</dd>
+              </div>
+              <div>
+                <dt>Class Coordinator For</dt>
+                <dd>{formatSemesterList(profile?.coordinatorSemesters)}</dd>
+              </div>
+              <div>
+                <dt>Mentor Range</dt>
+                <dd>{formatMentorRanges(profile?.mentorAssignments)}</dd>
               </div>
             </>
           ) : null}
