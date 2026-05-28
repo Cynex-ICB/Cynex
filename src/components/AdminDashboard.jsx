@@ -58,6 +58,14 @@ const initialMentorForm = {
   endUsn: "",
 };
 
+const initialTeacherAdminForm = {
+  name: "",
+  collegeEmail: "",
+  teacherId: "",
+  role: "admin",
+  password: "",
+};
+
 const categoryLabels = {
   assignment: "Assignment",
   note: "Note",
@@ -134,6 +142,9 @@ function AdminDashboard({ user, token, onLogout }) {
                 <NavLink to="/admin/subjects" onClick={closeAdminSidebar}>
                   Subject Declaration
                 </NavLink>
+                <NavLink to="/admin/admins" onClick={closeAdminSidebar}>
+                  Teacher Admins
+                </NavLink>
                 <NavLink to="/admin/coordinators" onClick={closeAdminSidebar}>
                   Class Coordinators
                 </NavLink>
@@ -195,6 +206,7 @@ function AdminDashboard({ user, token, onLogout }) {
             {isMasterAdmin ? (
               <>
                 <Route path="subjects" element={<SubjectsPage token={token} />} />
+                <Route path="admins" element={<TeacherAdminsPage token={token} />} />
                 <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />
                 <Route path="mentors" element={<MentorAssignmentsPage token={token} />} />
                 <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
@@ -1592,6 +1604,175 @@ function CoordinatorAssignmentsPage({ token }) {
               {item.coordinator?.teacherId ? <small>ID: {item.coordinator.teacherId}</small> : null}
             </article>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TeacherAdminsPage({ token }) {
+  const [form, setForm] = useState(initialTeacherAdminForm);
+  const [admins, setAdmins] = useState([]);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const authHeaders = getAuthHeaders(token);
+
+  useEffect(() => {
+    loadAdmins();
+  }, [token]);
+
+  const loadAdmins = async () => {
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/admins`, {
+          headers: authHeaders,
+        })
+      );
+      setAdmins(data.admins || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
+  };
+
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((currentForm) => ({
+      ...currentForm,
+      [name]: name === "teacherId" ? value.toUpperCase() : value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setStatus("");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/admins`, {
+          method: "POST",
+          headers: {
+            ...authHeaders,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        })
+      );
+
+      setAdmins((currentAdmins) => [data.admin, ...currentAdmins]);
+      setForm(initialTeacherAdminForm);
+      setStatus("Teacher admin created. Share the temporary password directly with the teacher.");
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <section className="admin-grid admin-route-panel">
+      <form className="card admin-form" onSubmit={handleSubmit}>
+        <div>
+          <p className="eyebrow">Teacher Admins</p>
+          <h2>Create teacher access</h2>
+          <span className="admin-file-hint">
+            Add a teacher account with employee ID, portal role, and a temporary password.
+          </span>
+        </div>
+
+        <label>
+          Teacher Name
+          <input
+            name="name"
+            type="text"
+            value={form.name}
+            onChange={updateField}
+            placeholder="Teacher full name"
+            minLength="2"
+            maxLength="80"
+            required
+          />
+        </label>
+
+        <label>
+          Email
+          <input
+            name="collegeEmail"
+            type="email"
+            value={form.collegeEmail}
+            onChange={updateField}
+            placeholder="teacher@example.com"
+            required
+          />
+        </label>
+
+        <label>
+          Teacher Employee ID
+          <input
+            name="teacherId"
+            type="text"
+            value={form.teacherId}
+            onChange={updateField}
+            placeholder="Employee ID"
+            required
+          />
+        </label>
+
+        <label>
+          Role
+          <select name="role" value={form.role} onChange={updateField} required>
+            <option value="admin">Teacher Admin</option>
+            <option value="master-admin">Master Admin</option>
+          </select>
+        </label>
+
+        <label>
+          Temporary Password
+          <input
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={updateField}
+            placeholder="At least 8 characters"
+            minLength="8"
+            required
+          />
+        </label>
+
+        {status ? <p className="form-message success">{status}</p> : null}
+        {error ? <p className="form-message error">{error}</p> : null}
+
+        <button className="primary-button admin-submit" type="submit" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Teacher Admin"}
+        </button>
+      </form>
+
+      <div className="admin-posts">
+        <div className="admin-section-heading">
+          <p className="eyebrow">Admin Accounts</p>
+          <h2>Teachers with portal access</h2>
+        </div>
+
+        <div className="student-list">
+          {admins.length ? (
+            admins.map((admin) => (
+              <article className="card student-card" key={admin.id}>
+                <div className="student-card-top">
+                  <span>{admin.role === "master-admin" ? "Master Admin" : "Teacher Admin"}</span>
+                  {admin.teacherId ? <small>ID: {admin.teacherId}</small> : null}
+                </div>
+                <h3>{admin.name}</h3>
+                <small>{admin.collegeEmail}</small>
+              </article>
+            ))
+          ) : (
+            <div className="card empty-state">
+              <h3>No teacher admins yet</h3>
+              <p>Create teacher access from the form.</p>
+            </div>
+          )}
         </div>
       </div>
     </section>
