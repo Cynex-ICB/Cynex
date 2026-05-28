@@ -282,7 +282,11 @@ function AcademicContentPage({ token }) {
 
   const updateField = (event) => {
     const { name, value } = event.target;
-    setForm((currentForm) => ({ ...currentForm, [name]: value }));
+    setForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+      ...(name === "category" && value !== "assignment" ? { dueDate: "" } : {}),
+    }));
   };
 
   const handleMaterialSubmit = async (event) => {
@@ -294,6 +298,7 @@ function AcademicContentPage({ token }) {
     try {
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => {
+        if (key === "dueDate" && form.category !== "assignment") return;
         if (value) formData.append(key, value);
       });
 
@@ -439,10 +444,12 @@ function AcademicContentPage({ token }) {
           </span>
         </label>
 
-        <label>
-          Due date
-          <input name="dueDate" type="date" value={form.dueDate} onChange={updateField} />
-        </label>
+        {form.category === "assignment" ? (
+          <label>
+            Due date
+            <input name="dueDate" type="date" value={form.dueDate} onChange={updateField} />
+          </label>
+        ) : null}
 
         {status ? <p className="form-message success">{status}</p> : null}
         {error ? <p className="form-message error">{error}</p> : null}
@@ -1684,7 +1691,7 @@ function TeacherAdminsPage({ token }) {
 
       setAdmins((currentAdmins) => [data.admin, ...currentAdmins]);
       setForm(initialTeacherAdminForm);
-      setStatus("Teacher admin created. Share the temporary password directly with the teacher.");
+      setStatus(data.warning || "Teacher admin created and notification email sent.");
     } catch (submitError) {
       setError(
         submitError.message.includes("Expected JSON")
