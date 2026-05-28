@@ -417,14 +417,27 @@ h4 {
 .hero-content {
   text-align: center;
   font-size: x-large;
+  max-width: 860px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1.25rem;
 }
 
 .hero-content h2 {
   margin: 0;
   color: #ffffff;
-  font-size: clamp(2rem, 6.4vw, 5.1rem);
-  line-height: 1.08;
-  overflow-wrap: anywhere;
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  line-height: 1.05;
+  max-width: min(100%, 760px);
+  white-space: normal;
+}
+
+.hero-content h2 .hero-subtitle {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: clamp(1rem, 2.2vw, 1.5rem);
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 500;
 }
 
 .hero-content p:not(.eyebrow) {
