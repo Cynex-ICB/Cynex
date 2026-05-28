@@ -939,6 +939,29 @@ h4 {
   cursor: pointer;
 }
 
+.page-motion-wrapper {
+  min-height: calc(100vh - var(--sidebar-page-offset));
+  width: 100%;
+}
+
+.hero-content {
+  max-width: 820px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1.45rem;
+}
+
+.section {
+  overflow: hidden;
+}
+
+.section-heading,
+.hero-section,
+.achievement-card,
+.faculty-card {
+  will-change: transform, opacity;
+}
+
 .text-button:hover,
 .text-button:focus-visible {
   color: var(--color-navy);

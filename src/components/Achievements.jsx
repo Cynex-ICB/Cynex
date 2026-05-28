@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from 'framer-motion';
 import { API_BASE_URL, readApiJson } from "../utils/api.js";
 
 const fallbackAchievements = [
@@ -46,7 +47,14 @@ function Achievements({ token }) {
   }, [token]);
 
   return (
-    <section className="section" id="achievements">
+    <motion.section
+      className="section"
+      id="achievements"
+      initial={{ opacity: 0, y: 36 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.65, ease: 'easeOut' }}
+    >
       <div className="section-heading">
         <p className="eyebrow">Highlights</p>
         <h2>Achievements</h2>
@@ -54,8 +62,15 @@ function Achievements({ token }) {
 
       <div className="achievement-list">
         {achievements.map((achievement, index) => (
-          <article className="card achievement-card" key={achievement._id || achievement.title}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
+          <motion.article
+            className="card achievement-card"
+            key={achievement._id || achievement.title}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.45, ease: 'easeOut', delay: index * 0.06 }}
+          >
+            <span>{String(index + 1).padStart(2, '0')}</span>
             <div>
               <h3>{achievement.title}</h3>
               <p>{achievement.description}</p>
@@ -65,10 +80,10 @@ function Achievements({ token }) {
                 </a>
               ) : null}
             </div>
-          </article>
+          </motion.article>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }
 

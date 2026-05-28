@@ -1,6 +1,15 @@
+import { motion } from 'framer-motion';
+
 function Contact() {
   return (
-    <section className="section alt-section" id="contact">
+    <motion.section
+      className="section alt-section"
+      id="contact"
+      initial={{ opacity: 0, y: 36 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.65, ease: 'easeOut' }}
+    >
       <div className="section-heading">
         <p className="eyebrow">Reach Us</p>
         <h2>Contact Us</h2>
@@ -18,7 +27,7 @@ function Contact() {
           <a href="tel:+910000000000">+91 00000 00000</a>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

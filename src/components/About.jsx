@@ -1,6 +1,15 @@
+import { motion } from 'framer-motion';
+
 function About() {
   return (
-    <section className="section" id="about">
+    <motion.section
+      className="section"
+      id="about"
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.65, ease: 'easeOut' }}
+    >
       <div className="section-heading">
         <p className="eyebrow">About</p>
         <h2>About Department</h2>
@@ -19,7 +28,7 @@ function About() {
           confident engineers who can design meaningful solutions.
         </p>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

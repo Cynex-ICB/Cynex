@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import Navbar from './components/Navbar.jsx';
@@ -26,7 +27,30 @@ function readStoredUser() {
   }
 }
 
-function PublicLayout({ user, onLogout, children }) {
+const pageMotion = {
+  initial: { opacity: 0, y: 24, scale: 0.99 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -24, scale: 0.99 },
+  transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+};
+
+function PageMotion({ children, keyProp }) {
+  return (
+    <motion.div
+      className="page-motion-wrapper"
+      variants={pageMotion}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={pageMotion.transition}
+      key={keyProp}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function PublicLayout({ user, onLogout, children }) { 
   return (
     <div className="public-layout">
       <Navbar user={user} onLogout={onLogout} />
@@ -64,6 +88,11 @@ function App() {
       document.body.classList.remove('auth-only');
     };
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, left: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!isAuthenticated && location.pathname === '/login') {
@@ -134,131 +163,149 @@ function App() {
   return (
     <>
       <InstallPrompt />
-      <Routes>
-        <Route
-          path="/login"
-          element={
-            <Navigate
-              to="/"
-              replace
-              state={isAuthenticated ? undefined : loginRedirectState}
-            />
-          }
-        />
-        <Route path="/signup" element={<Navigate to="/" replace />} />
-        <Route path="/reset" element={authElement} />
-        <Route
-          path="/admin/*"
-          element={
-            isAuthenticated && ['admin', 'master-admin'].includes(authUser?.role) ? (
-              <AdminDashboard user={authUser} token={authToken} onLogout={handleLogout} />
-            ) : (
+      <AnimatePresence mode="wait" initial={false}>
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/login"
+            element={
               <Navigate
-                to={isAuthenticated ? '/' : '/'}
+                to="/"
                 replace
-                state={isAuthenticated ? undefined : { from: location, ...loginRedirectState }}
+                state={isAuthenticated ? undefined : loginRedirectState}
               />
-            )
-          }
-        />
-        <Route
-          path="/"
-          element={
-            isAuthenticated ? (
-              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-                <Hero />
-                <About />
-            </ProtectedPublicPage>
-          ) : (
-            <main className="auth-page">
-              <Auth onAuthenticated={handleAuthenticated} />
-            </main>
-          )
-        }
-      />
-        <Route
-          path="/faculty"
-          element={
-            isAuthenticated ? (
-              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-                <Faculty />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
-          )
-        }
-      />
-        <Route
-          path="/achievements"
-          element={
-            isAuthenticated ? (
-              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-                <Achievements token={authToken} />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
-          )
-        }
-      />
-        <Route
-          path="/placements-internships"
-          element={
-            isAuthenticated ? (
-              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-                <PlacementsInternships token={authToken} />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
-          )
-        }
-      />
-        <Route
-          path="/materials"
-          element={
-            isAuthenticated ? (
-              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-                <Materials token={authToken} user={authUser} />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
-          )
-        }
-        />
-        <Route
-          path="/profile"
-          element={
-            isAuthenticated ? (
-              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-                <Profile token={authToken} user={authUser} onUserUpdate={handleUserUpdate} />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
-          )
-        }
-      />
-        <Route
-          path="/contact"
-          element={
-            isAuthenticated ? (
-              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
-                <Contact />
-            </ProtectedPublicPage>
-          ) : (
-            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
-          )
-        }
-      />
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to="/"
-              replace
-              state={isAuthenticated ? undefined : loginRedirectState}
-            />
-          }
-        />
-      </Routes>
+            }
+          />
+          <Route path="/signup" element={<Navigate to="/" replace />} />
+          <Route path="/reset" element={authElement} />
+          <Route
+            path="/admin/*"
+            element={
+              isAuthenticated && ['admin', 'master-admin'].includes(authUser?.role) ? (
+                <PageMotion keyProp={location.pathname}>
+                  <AdminDashboard user={authUser} token={authToken} onLogout={handleLogout} />
+                </PageMotion>
+              ) : (
+                <Navigate
+                  to={isAuthenticated ? '/' : '/'}
+                  replace
+                  state={isAuthenticated ? undefined : { from: location, ...loginRedirectState }}
+                />
+              )
+            }
+          />
+          <Route
+            path="/"
+            element={
+              isAuthenticated ? (
+                <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                  <PageMotion keyProp={location.pathname}>
+                    <Hero />
+                    <About />
+                  </PageMotion>
+                </ProtectedPublicPage>
+              ) : (
+                <main className="auth-page">
+                  <Auth onAuthenticated={handleAuthenticated} />
+                </main>
+              )
+            }
+          />
+          <Route
+            path="/faculty"
+            element={
+              isAuthenticated ? (
+                <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                  <PageMotion keyProp={location.pathname}>
+                    <Faculty />
+                  </PageMotion>
+                </ProtectedPublicPage>
+              ) : (
+                <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+              )
+            }
+          />
+          <Route
+            path="/achievements"
+            element={
+              isAuthenticated ? (
+                <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                  <PageMotion keyProp={location.pathname}>
+                    <Achievements token={authToken} />
+                  </PageMotion>
+                </ProtectedPublicPage>
+              ) : (
+                <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+              )
+            }
+          />
+          <Route
+            path="/placements-internships"
+            element={
+              isAuthenticated ? (
+                <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                  <PageMotion keyProp={location.pathname}>
+                    <PlacementsInternships token={authToken} />
+                  </PageMotion>
+                </ProtectedPublicPage>
+              ) : (
+                <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+              )
+            }
+          />
+          <Route
+            path="/materials"
+            element={
+              isAuthenticated ? (
+                <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                  <PageMotion keyProp={location.pathname}>
+                    <Materials token={authToken} user={authUser} />
+                  </PageMotion>
+                </ProtectedPublicPage>
+              ) : (
+                <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+              )
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              isAuthenticated ? (
+                <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                  <PageMotion keyProp={location.pathname}>
+                    <Profile token={authToken} user={authUser} onUserUpdate={handleUserUpdate} />
+                  </PageMotion>
+                </ProtectedPublicPage>
+              ) : (
+                <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+              )
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              isAuthenticated ? (
+                <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                  <PageMotion keyProp={location.pathname}>
+                    <Contact />
+                  </PageMotion>
+                </ProtectedPublicPage>
+              ) : (
+                <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+              )
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to="/"
+                replace
+                state={isAuthenticated ? undefined : loginRedirectState}
+              />
+            }
+          />
+        </Routes>
+      </AnimatePresence>
     </>
   );
 }
