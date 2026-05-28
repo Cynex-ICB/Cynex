@@ -1473,6 +1473,7 @@ function CoordinatorAssignmentsPage({ token }) {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [removingCoordinatorKey, setRemovingCoordinatorKey] = useState("");
   const authHeaders = getAuthHeaders(token);
 
   useEffect(() => {
@@ -1546,6 +1547,31 @@ function CoordinatorAssignmentsPage({ token }) {
       setError(submitError.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const removeCoordinator = async (teacherUserId, semester) => {
+    setStatus("");
+    setError("");
+    setRemovingCoordinatorKey(`${teacherUserId}-${semester}`);
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/coordinators/${teacherUserId}/${semester}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        })
+      );
+
+      setTeachers((currentTeachers) =>
+        currentTeachers.map((teacher) => (teacher.id === data.teacher.id ? data.teacher : teacher))
+      );
+      await loadStudents();
+      setStatus(`Coordinator removed. Updated ${data.updatedStudents} student profiles.`);
+    } catch (deleteError) {
+      setError(deleteError.message);
+    } finally {
+      setRemovingCoordinatorKey("");
     }
   };
 
@@ -1635,9 +1661,18 @@ function CoordinatorAssignmentsPage({ token }) {
               <article className="card student-card" key={item.semester}>
                 <div className="student-card-top">
                   <span>Semester {item.semester}</span>
-                  <small>{item.count} students</small>
+                  <button
+                    type="button"
+                    onClick={() => removeCoordinator(item.coordinator.id, item.semester)}
+                    disabled={removingCoordinatorKey === `${item.coordinator.id}-${item.semester}`}
+                  >
+                    {removingCoordinatorKey === `${item.coordinator.id}-${item.semester}`
+                      ? "Removing..."
+                      : "Delete"}
+                  </button>
                 </div>
                 <h3>{item.coordinator.name}</h3>
+                <small>{item.count} students</small>
                 {item.coordinator.teacherId ? <small>ID: {item.coordinator.teacherId}</small> : null}
               </article>
             ))
