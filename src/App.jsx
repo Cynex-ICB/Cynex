@@ -8,6 +8,7 @@ import Faculty from './components/Faculty.jsx';
 import Achievements from './components/Achievements.jsx';
 import PlacementsInternships from './components/PlacementsInternships.jsx';
 import Materials from './components/Materials.jsx';
+import AptitudePlatform from './components/AptitudePlatform.jsx';
 import Contact from './components/Contact.jsx';
 import Footer from './components/Footer.jsx';
 import Auth from './components/Auth.jsx';
@@ -224,6 +225,18 @@ function App() {
           )
         }
         />
+        <Route
+          path="/aptitude"
+          element={
+            isAuthenticated ? (
+              <ProtectedPublicPage user={authUser} onLogout={handleLogout}>
+                <AptitudePlatform token={authToken} user={authUser} />
+            </ProtectedPublicPage>
+          ) : (
+            <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+          )
+        }
+      />
         <Route
           path="/profile"
           element={

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { API_BASE_URL, API_ORIGIN, readApiJson } from "../utils/api.js";
+import { AdminAptitude } from "./AptitudePlatform.jsx";
 
 const initialMaterialForm = {
   title: "",
@@ -165,6 +166,9 @@ function AdminDashboard({ user, token, onLogout }) {
                 <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
                   CIE Marks Overview
                 </NavLink>
+                <NavLink to="/admin/aptitude" onClick={closeAdminSidebar}>
+                  Aptitude Tests
+                </NavLink>
               </>
             ) : (
               <>
@@ -179,6 +183,9 @@ function AdminDashboard({ user, token, onLogout }) {
                 </NavLink>
                 <NavLink to="/admin/cie-marks" onClick={closeAdminSidebar}>
                   CIE Marks
+                </NavLink>
+                <NavLink to="/admin/aptitude" onClick={closeAdminSidebar}>
+                  Aptitude Tests
                 </NavLink>
               </>
             )}
@@ -221,6 +228,7 @@ function AdminDashboard({ user, token, onLogout }) {
                 <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />
                 <Route path="mentors" element={<MentorAssignmentsPage token={token} />} />
                 <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
+                <Route path="aptitude" element={<AdminAptitude token={token} />} />
               </>
             ) : (
               <>
@@ -228,6 +236,7 @@ function AdminDashboard({ user, token, onLogout }) {
                 <Route path="activity-alerts" element={<ActivityAlertsPage token={token} />} />
                 <Route path="showcase" element={<ShowcaseContentPage token={token} />} />
                 <Route path="cie-marks" element={<CieMarksPage token={token} />} />
+                <Route path="aptitude" element={<AdminAptitude token={token} />} />
               </>
             )}
             <Route path="*" element={<Navigate to={defaultRoute} replace />} />
