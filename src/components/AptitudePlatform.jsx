@@ -22,6 +22,10 @@ const initialAssessmentForm = {
   concept: "Logical Reasoning",
   difficulty: "Medium",
   durationMinutes: "30",
+  questionCount: "10",
+  marks: "1",
+  negativeMarks: "0.25",
+  generationMode: "fast",
   passingMarks: "10",
   status: "draft",
   startTime: "",
@@ -53,6 +57,15 @@ function formatSeconds(totalSeconds) {
   const minutes = Math.floor(safeSeconds / 60);
   const seconds = safeSeconds % 60;
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatDuration(seconds) {
+  if (!seconds) return "0m";
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours}h ${minutes % 60}m`;
 }
 
 function StatTile({ label, value }) {
@@ -88,15 +101,39 @@ export function AdminAptitude({ token }) {
   const [meta, setMeta] = useState({ concepts: [], difficulties: [], statuses: [] });
   const [dashboard, setDashboard] = useState(null);
   const [assessments, setAssessments] = useState([]);
-  const [selectedAssessment, setSelectedAssessment] = useState(null);
+  const [view, setView] = useState("dashboard");
+  const [activeAssessment, setActiveAssessment] = useState(null);
+  const [questions, setQuestions] = useState([]);
   const [results, setResults] = useState([]);
-  const [form, setForm] = useState(initialAssessmentForm);
+  const [form, setForm] = useState({
+    title: "",
+    concept: "All Concepts",
+    difficulty: "Mixed",
+    perConcept: "5",
+    totalQuestions: "30",
+    durationMinutes: "60",
+    marks: "1",
+    negativeMarks: "0.25",
+    passingMarks: "20",
+    startTime: "",
+    endTime: "",
+    status: "draft",
+    generationMode: "fast",
+  });
+  const [sourceFile, setSourceFile] = useState(null);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [durationExtensions, setDurationExtensions] = useState({});
+  const [attemptExtensions, setAttemptExtensions] = useState({});
 
   const headers = useMemo(() => authHeaders(token), [token]);
+  const singleConceptCount = Math.max(1, (meta.concepts || []).filter((concept) => concept !== "All Concepts").length);
+  const generatedQuestionCount =
+    form.concept === "All Concepts"
+      ? Number(form.perConcept || 0) * singleConceptCount
+      : Number(form.totalQuestions || 0);
 
   useEffect(() => {
     loadAdminData();
@@ -126,26 +163,10 @@ export function AdminAptitude({ token }) {
     setForm((current) => ({ ...current, [name]: value }));
   }
 
-  function updateQuestion(index, field, value) {
+  function stepQuestionCount(key, delta) {
     setForm((current) => ({
       ...current,
-      questions: current.questions.map((question, questionIndex) =>
-        questionIndex === index ? { ...question, [field]: value } : question
-      ),
-    }));
-  }
-
-  function addQuestion() {
-    setForm((current) => ({
-      ...current,
-      questions: [...current.questions, { ...emptyQuestion, concept: current.concept }],
-    }));
-  }
-
-  function removeQuestion(index) {
-    setForm((current) => ({
-      ...current,
-      questions: current.questions.filter((_, questionIndex) => questionIndex !== index),
+      [key]: String(Math.max(1, Number(current[key] || 1) + delta)),
     }));
   }
 
@@ -156,34 +177,111 @@ export function AdminAptitude({ token }) {
     setIsCreating(true);
 
     try {
-      const payload = {
-        ...form,
-        durationMinutes: Number(form.durationMinutes),
-        passingMarks: Number(form.passingMarks),
-        startTime: form.startTime ? new Date(form.startTime).toISOString() : null,
-        endTime: form.endTime ? new Date(form.endTime).toISOString() : null,
-        questions: form.questions.map((question) => ({
-          ...question,
-          concept: question.concept || form.concept,
-          marks: Number(question.marks),
-          negativeMarks: Number(question.negativeMarks),
-        })),
-      };
+      const formData = new FormData();
+      formData.append("title", form.title.trim());
+      formData.append("concept", form.concept);
+      formData.append("difficulty", form.difficulty);
+      formData.append("question_count", String(generatedQuestionCount));
+      formData.append("questionCount", String(generatedQuestionCount));
+      formData.append("duration_minutes", String(Number(form.durationMinutes)));
+      formData.append("durationMinutes", String(Number(form.durationMinutes)));
+      formData.append("marks_per_question", String(Number(form.marks)));
+      formData.append("marks", String(Number(form.marks)));
+      formData.append("negative_marks", String(Number(form.negativeMarks)));
+      formData.append("negativeMarks", String(Number(form.negativeMarks)));
+      formData.append("passing_marks", String(Number(form.passingMarks)));
+      formData.append("passingMarks", String(Number(form.passingMarks)));
+      formData.append("status", form.status);
+      formData.append("generation_mode", form.generationMode);
+      formData.append("generationMode", form.generationMode);
+      if (form.startTime) formData.append("start_time", form.startTime);
+      if (form.endTime) formData.append("end_time", form.endTime);
+      if (sourceFile) formData.append("file", sourceFile);
 
       const data = await readApiJson(
-        await fetch(`${API_BASE_URL}/aptitude/admin/assessments`, {
+        await fetch(`${API_BASE_URL}/aptitude/admin/assessments/generate`, {
           method: "POST",
-          headers: authHeaders(token, { "Content-Type": "application/json" }),
-          body: JSON.stringify(payload),
+          headers: authHeaders(token),
+          body: formData,
         })
       );
 
       setAssessments((current) => [data.assessment, ...current]);
-      setForm(initialAssessmentForm);
-      setStatus("Aptitude assessment created.");
-      loadAdminData();
+      setSourceFile(null);
+      setStatus("Questions generated and saved as an assessment.");
+      await openQuestionReview(data.assessment.id);
+      await loadAdminData();
     } catch (createError) {
       setError(createError.message);
+    } finally {
+      setIsCreating(false);
+    }
+  }
+
+  async function openQuestionReview(assessmentId) {
+    setStatus("");
+    setError("");
+    const data = await readApiJson(
+      await fetch(`${API_BASE_URL}/aptitude/admin/assessments/${assessmentId}`, { headers })
+    );
+    setActiveAssessment(data.assessment);
+    setQuestions(data.questions || []);
+    setView("questions");
+  }
+
+  function updateQuestion(index, field, value) {
+    setQuestions((current) =>
+      current.map((question, questionIndex) =>
+        questionIndex === index ? { ...question, [field]: value } : question
+      )
+    );
+  }
+
+  function addQuestion() {
+    setQuestions((current) => [
+      ...current,
+      {
+        question_text: "",
+        option_a: "",
+        option_b: "",
+        option_c: "",
+        option_d: "",
+        correct_option: "A",
+        explanation: "",
+        shortcut: "",
+        concept: activeAssessment?.concept || "",
+        difficulty: activeAssessment?.difficulty || "Medium",
+        marks: 1,
+        negative_marks: 0.25,
+      },
+    ]);
+  }
+
+  async function saveQuestions(nextStatus = "") {
+    if (!activeAssessment?.id) return;
+    setIsCreating(true);
+    setStatus("");
+    setError("");
+
+    try {
+      const data = await readApiJson(
+        await fetch(`${API_BASE_URL}/aptitude/admin/assessments/${activeAssessment.id}/questions`, {
+          method: "PUT",
+          headers: authHeaders(token, { "Content-Type": "application/json" }),
+          body: JSON.stringify({ questions }),
+        })
+      );
+      setActiveAssessment(data.assessment);
+      setQuestions(data.questions || []);
+
+      if (nextStatus) {
+        await changeStatus(data.assessment, nextStatus);
+      }
+
+      setStatus(nextStatus === "published" ? "Saved and published." : "Questions saved.");
+      await loadAdminData();
+    } catch (saveError) {
+      setError(saveError.message);
     } finally {
       setIsCreating(false);
     }
@@ -219,8 +317,8 @@ export function AdminAptitude({ token }) {
         headers,
       });
       setAssessments((current) => current.filter((assessment) => assessment.id !== assessmentId));
-      if (selectedAssessment?.id === assessmentId) {
-        setSelectedAssessment(null);
+      if (activeAssessment?.id === assessmentId) {
+        setActiveAssessment(null);
         setResults([]);
       }
       setStatus("Assessment deleted.");
@@ -231,7 +329,7 @@ export function AdminAptitude({ token }) {
   }
 
   async function viewResults(assessment) {
-    setSelectedAssessment(assessment);
+    setActiveAssessment(assessment);
     setStatus("");
     setError("");
     try {
@@ -241,29 +339,147 @@ export function AdminAptitude({ token }) {
         })
       );
       setResults(data.results || []);
+      setView("results");
     } catch (resultsError) {
       setError(resultsError.message);
     }
   }
 
+  async function extendAssessmentDuration(assessmentId) {
+    const minutes = Number(durationExtensions[assessmentId] || 5);
+    setStatus("");
+    setError("");
+    try {
+      await readApiJson(
+        await fetch(`${API_BASE_URL}/aptitude/admin/assessments/${assessmentId}/extend-duration`, {
+          method: "PATCH",
+          headers: authHeaders(token, { "Content-Type": "application/json" }),
+          body: JSON.stringify({ minutes }),
+        })
+      );
+      setStatus(`Assessment duration extended by ${minutes} minutes.`);
+      await loadAdminData();
+    } catch (extendError) {
+      setError(extendError.message);
+    }
+  }
+
+  async function extendAttempt(attemptId) {
+    const minutes = Number(attemptExtensions[attemptId] || 5);
+    setStatus("");
+    setError("");
+    try {
+      await readApiJson(
+        await fetch(`${API_BASE_URL}/aptitude/admin/attempts/${attemptId}/extend`, {
+          method: "PATCH",
+          headers: authHeaders(token, { "Content-Type": "application/json" }),
+          body: JSON.stringify({ minutes }),
+        })
+      );
+      setStatus(`Added ${minutes} minutes.`);
+      if (activeAssessment) await viewResults(activeAssessment);
+    } catch (extendError) {
+      setError(extendError.message);
+    }
+  }
+
   return (
-    <div className="aptitude-layout">
+    <div className="aptitude-layout vithai-admin-dashboard">
+      <div className="vithai-admin-tabs">
+        <button className={view === "dashboard" ? "active" : ""} type="button" onClick={() => setView("dashboard")}>
+          Overview
+        </button>
+        <button className={view === "assessments" ? "active" : ""} type="button" onClick={() => setView("assessments")}>
+          Assessments
+        </button>
+        <button className={view === "create" ? "active" : ""} type="button" onClick={() => setView("create")}>
+          Create Assessment
+        </button>
+      </div>
+
+      {status ? <p className="form-message success">{status}</p> : null}
+      {error ? <p className="form-message error">{error}</p> : null}
+
+      {view === "dashboard" ? (
+      <>
+      <div className="vithai-page-hero card">
+        <div>
+          <p className="eyebrow">Admin Overview</p>
+          <h2>Assessment command center</h2>
+          <p>Monitor publishing, submissions, pass rates, and student performance from one focused dashboard.</p>
+        </div>
+        <button className="primary-button" type="button" onClick={() => setView("create")}>
+          Create Assessment
+        </button>
+      </div>
+
       <div className="aptitude-stats">
         <StatTile label="Assessments" value={dashboard?.assessments ?? "-"} />
         <StatTile label="Published" value={dashboard?.published ?? "-"} />
         <StatTile label="Students" value={dashboard?.students ?? "-"} />
-        <StatTile label="Submissions" value={dashboard?.submittedAttempts ?? "-"} />
+        <StatTile label="Submissions" value={dashboard?.submitted_attempts ?? dashboard?.submittedAttempts ?? "-"} />
+        <StatTile label="In Progress" value={dashboard?.in_progress_attempts ?? dashboard?.inProgressAttempts ?? "-"} />
+        <StatTile label="Pass Rate" value={`${dashboard?.pass_rate ?? 0}%`} />
+        <StatTile label="Average Score" value={`${dashboard?.average_percentage ?? 0}%`} />
       </div>
 
+      <div className="card vithai-table-shell">
+        <div className="aptitude-panel-heading">
+          <div>
+            <p className="eyebrow">Student Submission Analytics</p>
+            <h3>Latest submitted attempts</h3>
+          </div>
+          <button type="button" onClick={() => setView("assessments")}>Manage assessments</button>
+        </div>
+        <div className="vithai-table-wrap">
+          <table className="vithai-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Assessment</th>
+                <th>Concept</th>
+                <th>Difficulty</th>
+                <th>Marks</th>
+                <th>Percentage</th>
+                <th>Time Taken</th>
+                <th>Result</th>
+                <th>Submitted</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dashboard?.submissions?.length ? dashboard.submissions.map((submission) => (
+                <tr key={submission.id}>
+                  <td><strong>{submission.student_name}</strong><span>{submission.email}</span></td>
+                  <td>{submission.assessment_title}</td>
+                  <td>{submission.concept}</td>
+                  <td>{submission.difficulty}</td>
+                  <td>{submission.score}/{submission.total_marks}</td>
+                  <td>{submission.percentage}%</td>
+                  <td>{formatDuration(submission.time_taken_seconds)}</td>
+                  <td>{submission.passed ? "Passed" : "Failed"}</td>
+                  <td>{formatDateTime(submission.submitted_at)}</td>
+                </tr>
+              )) : (
+                <tr><td colSpan="9">No submissions yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </>
+      ) : null}
+
+      {view === "create" ? (
       <form className="card admin-form aptitude-form" onSubmit={createAssessment}>
         <div>
-          <p className="eyebrow">Admin Console</p>
-          <h2>Create aptitude assessment</h2>
+          <p className="eyebrow">AI Builder</p>
+          <h2>Create Assessment</h2>
+          <span>Select the assessment shape, then let the backend AI agent build editable MCQs.</span>
         </div>
 
         <div className="aptitude-form-grid">
           <label>
-            Title
+            Assessment Title
             <input name="title" value={form.title} onChange={updateFormField} required />
           </label>
           <label>
@@ -287,15 +503,38 @@ export function AdminAptitude({ token }) {
             </select>
           </label>
           <label>
-            Duration (minutes)
-            <input
-              name="durationMinutes"
-              type="number"
-              min="1"
-              value={form.durationMinutes}
-              onChange={updateFormField}
-              required
-            />
+            Generation Mode
+            <select name="generationMode" value={form.generationMode} onChange={updateFormField}>
+              <option value="fast">Fast</option>
+              <option value="ai">AI Enhanced</option>
+            </select>
+          </label>
+        </div>
+
+        <section className="vithai-count-box">
+          <div>
+            <strong>{form.concept === "All Concepts" ? "Questions Per Concept" : "Total Questions"}</strong>
+            <span>Generated total: {generatedQuestionCount} questions</span>
+          </div>
+          <div>
+            <button type="button" onClick={() => stepQuestionCount(form.concept === "All Concepts" ? "perConcept" : "totalQuestions", -1)}>-</button>
+            <strong>{form.concept === "All Concepts" ? form.perConcept : form.totalQuestions}</strong>
+            <button type="button" onClick={() => stepQuestionCount(form.concept === "All Concepts" ? "perConcept" : "totalQuestions", 1)}>+</button>
+          </div>
+        </section>
+
+        <div className="aptitude-form-grid">
+          <label>
+            Duration in minutes
+            <input name="durationMinutes" type="number" min="1" value={form.durationMinutes} onChange={updateFormField} required />
+          </label>
+          <label>
+            Marks per question
+            <input name="marks" type="number" min="0" step="0.25" value={form.marks} onChange={updateFormField} required />
+          </label>
+          <label>
+            Negative marks
+            <input name="negativeMarks" type="number" min="0" step="0.25" value={form.negativeMarks} onChange={updateFormField} required />
           </label>
           <label>
             Passing marks
@@ -308,16 +547,6 @@ export function AdminAptitude({ token }) {
               onChange={updateFormField}
               required
             />
-          </label>
-          <label>
-            Status
-            <select name="status" value={form.status} onChange={updateFormField}>
-              {meta.statuses.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
           </label>
           <label>
             Start time
@@ -339,114 +568,27 @@ export function AdminAptitude({ token }) {
           </label>
         </div>
 
-        <label>
-          Description
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={updateFormField}
-            rows="3"
-            placeholder="Optional instructions for students."
-          />
-        </label>
-
-        <div className="aptitude-question-builder">
-          <div className="aptitude-builder-heading">
-            <h3>Questions</h3>
-            <button className="secondary-button" type="button" onClick={addQuestion}>
-              Add Question
-            </button>
-          </div>
-
-          {form.questions.map((question, index) => (
-            <div className="aptitude-question-card" key={`question-${index + 1}`}>
-              <div className="aptitude-question-top">
-                <strong>Question {index + 1}</strong>
-                {form.questions.length > 1 ? (
-                  <button type="button" onClick={() => removeQuestion(index)}>
-                    Remove
-                  </button>
-                ) : null}
-              </div>
-              <label>
-                Question text
-                <textarea
-                  value={question.questionText}
-                  onChange={(event) => updateQuestion(index, "questionText", event.target.value)}
-                  rows="3"
-                  required
-                />
-              </label>
-              <div className="aptitude-options-grid">
-                {optionKeys.map((key) => (
-                  <label key={key}>
-                    Option {key}
-                    <input
-                      value={question[`option${key}`]}
-                      onChange={(event) => updateQuestion(index, `option${key}`, event.target.value)}
-                      required
-                    />
-                  </label>
-                ))}
-              </div>
-              <div className="aptitude-options-grid">
-                <label>
-                  Correct option
-                  <select
-                    value={question.correctOption}
-                    onChange={(event) => updateQuestion(index, "correctOption", event.target.value)}
-                  >
-                    {optionKeys.map((key) => (
-                      <option key={key} value={key}>
-                        {key}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Marks
-                  <input
-                    type="number"
-                    min="0.5"
-                    step="0.5"
-                    value={question.marks}
-                    onChange={(event) => updateQuestion(index, "marks", event.target.value)}
-                    required
-                  />
-                </label>
-                <label>
-                  Negative marks
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.25"
-                    value={question.negativeMarks}
-                    onChange={(event) => updateQuestion(index, "negativeMarks", event.target.value)}
-                    required
-                  />
-                </label>
-              </div>
-              <label>
-                Explanation
-                <textarea
-                  value={question.explanation}
-                  onChange={(event) => updateQuestion(index, "explanation", event.target.value)}
-                  rows="2"
-                  required
-                />
-              </label>
-            </div>
-          ))}
-        </div>
-
-        {status ? <p className="form-message success">{status}</p> : null}
-        {error ? <p className="form-message error">{error}</p> : null}
+          <label>
+          Optional source file
+            <input
+              type="file"
+              accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={(event) => setSourceFile(event.target.files?.[0] || null)}
+            />
+            <span className="admin-file-hint">
+              {sourceFile
+                ? sourceFile.name
+                : "Optional PDF, DOCX, or TXT context for VithAI question generation."}
+            </span>
+          </label>
 
         <button className="primary-button admin-submit" type="submit" disabled={isCreating}>
-          {isCreating ? "Creating..." : "Create Assessment"}
+          {isCreating ? "Generating questions..." : "Generate Questions"}
         </button>
       </form>
+      ) : null}
 
+      {view === "assessments" ? (
       <div className="aptitude-panel-grid">
         <div className="card aptitude-list-panel">
           <div className="aptitude-panel-heading">
@@ -478,17 +620,18 @@ export function AdminAptitude({ token }) {
                     <button type="button" onClick={() => viewResults(assessment)}>
                       Results
                     </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        changeStatus(
-                          assessment,
-                          assessment.status === "published" ? "draft" : "published"
-                        )
-                      }
-                    >
+                    <button type="button" onClick={() => openQuestionReview(assessment.id)}>Edit Questions</button>
+                    <button type="button" onClick={() => changeStatus(assessment, assessment.status === "published" ? "draft" : "published")}>
                       {assessment.status === "published" ? "Unpublish" : "Publish"}
                     </button>
+                    <input
+                      type="number"
+                      min="1"
+                      max="180"
+                      value={durationExtensions[assessment.id] ?? 5}
+                      onChange={(event) => setDurationExtensions((current) => ({ ...current, [assessment.id]: event.target.value }))}
+                    />
+                    <button type="button" onClick={() => extendAssessmentDuration(assessment.id)}>Add min</button>
                     <button type="button" className="danger" onClick={() => deleteAssessment(assessment.id)}>
                       Delete
                     </button>
@@ -503,41 +646,83 @@ export function AdminAptitude({ token }) {
             )}
           </div>
         </div>
+      </div>
+      ) : null}
 
+      {view === "questions" && activeAssessment ? (
         <div className="card aptitude-list-panel">
           <div className="aptitude-panel-heading">
             <div>
-              <p className="eyebrow">Results</p>
-              <h3>{selectedAssessment ? selectedAssessment.title : "Select an assessment"}</h3>
+              <p className="eyebrow">Question Review</p>
+              <h3>{activeAssessment.title}</h3>
+              <span>{questions.length} questions - {activeAssessment.status}</span>
+            </div>
+            <div className="aptitude-actions">
+              <button type="button" onClick={() => saveQuestions()} disabled={isCreating}>Save edits</button>
+              <button type="button" onClick={() => saveQuestions("published")} disabled={isCreating}>Publish assessment</button>
             </div>
           </div>
-
-          <div className="aptitude-result-list">
-            {results.length ? (
-              results.map((result) => (
-                <article className="aptitude-result-row" key={result.id}>
-                  <div>
-                    <strong>{result.studentName}</strong>
-                    <span>{result.collegeEmail || result.usn || "Student"}</span>
-                  </div>
-                  <div>
-                    <strong>{result.score}</strong>
-                    <span>{result.percentage}%</span>
-                  </div>
-                  <span className={`aptitude-pill ${result.passed ? "published" : "draft"}`}>
-                    {result.passed ? "Passed" : result.status}
-                  </span>
-                </article>
-              ))
-            ) : (
-              <div className="empty-state">
-                <h3>No results selected</h3>
-                <p>Open an assessment result list to view student scores.</p>
+          <div className="aptitude-question-builder">
+            {questions.map((question, index) => (
+              <div className="aptitude-question-card" key={question.id || index}>
+                <div className="aptitude-question-top">
+                  <strong>Question {index + 1}</strong>
+                  <button type="button" onClick={() => setQuestions((current) => current.filter((_, itemIndex) => itemIndex !== index))}>Remove</button>
+                </div>
+                <label>Question text<textarea value={question.question_text || ""} onChange={(event) => updateQuestion(index, "question_text", event.target.value)} rows="3" /></label>
+                <div className="aptitude-options-grid">
+                  {["a", "b", "c", "d"].map((key) => (
+                    <label key={key}>Option {key.toUpperCase()}<input value={question[`option_${key}`] || ""} onChange={(event) => updateQuestion(index, `option_${key}`, event.target.value)} /></label>
+                  ))}
+                </div>
+                <div className="aptitude-options-grid">
+                  <label>Correct option<select value={question.correct_option || "A"} onChange={(event) => updateQuestion(index, "correct_option", event.target.value)}>{optionKeys.map((key) => <option key={key}>{key}</option>)}</select></label>
+                  <label>Concept<input value={question.concept || ""} onChange={(event) => updateQuestion(index, "concept", event.target.value)} /></label>
+                  <label>Difficulty<select value={question.difficulty || "Medium"} onChange={(event) => updateQuestion(index, "difficulty", event.target.value)}>{["Easy", "Medium", "Hard", "Mixed"].map((difficulty) => <option key={difficulty}>{difficulty}</option>)}</select></label>
+                  <label>Marks<input type="number" step="0.25" value={question.marks ?? 1} onChange={(event) => updateQuestion(index, "marks", event.target.value)} /></label>
+                  <label>Negative marks<input type="number" step="0.25" value={question.negative_marks ?? 0.25} onChange={(event) => updateQuestion(index, "negative_marks", event.target.value)} /></label>
+                </div>
+                <label>Explanation<textarea value={question.explanation || ""} onChange={(event) => updateQuestion(index, "explanation", event.target.value)} rows="2" /></label>
+                <label>Shortcut<textarea value={question.shortcut || ""} onChange={(event) => updateQuestion(index, "shortcut", event.target.value)} rows="2" /></label>
               </div>
-            )}
+            ))}
+            <button className="secondary-button" type="button" onClick={addQuestion}>Add question</button>
           </div>
         </div>
-      </div>
+      ) : null}
+
+      {view === "results" ? (
+        <div className="card vithai-table-shell">
+          <div className="aptitude-panel-heading">
+            <div>
+              <p className="eyebrow">Attempt Monitor</p>
+              <h3>Assessment Results</h3>
+              <span>{activeAssessment?.title}</span>
+            </div>
+          </div>
+          <div className="vithai-table-wrap">
+            <table className="vithai-table">
+              <thead><tr><th>Student Name</th><th>Email</th><th>Status</th><th>Score</th><th>Percentage</th><th>Result</th><th>Extra Time</th><th>Started At</th><th>Submitted At</th><th>Extend</th></tr></thead>
+              <tbody>
+                {results.length ? results.map((result) => (
+                  <tr key={result.id}>
+                    <td>{result.student_name || result.studentName}</td>
+                    <td>{result.email || result.collegeEmail}</td>
+                    <td>{result.status === "in_progress" ? "In progress" : "Submitted"}</td>
+                    <td>{result.status === "submitted" ? result.score : "-"}</td>
+                    <td>{result.status === "submitted" ? `${result.percentage}%` : "-"}</td>
+                    <td>{result.status !== "submitted" ? "Pending" : result.passed ? "Passed" : "Failed"}</td>
+                    <td>{result.extra_time_minutes || 0}m</td>
+                    <td>{formatDateTime(result.started_at || result.startedAt)}</td>
+                    <td>{formatDateTime(result.submitted_at || result.submittedAt)}</td>
+                    <td>{result.status === "in_progress" ? <><input type="number" min="1" max="180" value={attemptExtensions[result.id] ?? 5} onChange={(event) => setAttemptExtensions((current) => ({ ...current, [result.id]: event.target.value }))} /><button type="button" onClick={() => extendAttempt(result.id)}>Add min</button></> : "Closed"}</td>
+                  </tr>
+                )) : <tr><td colSpan="10">No attempts yet.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

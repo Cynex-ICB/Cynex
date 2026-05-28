@@ -1375,6 +1375,185 @@ h4 {
   margin: 0 auto;
 }
 
+.vithai-admin-dashboard {
+  width: min(1280px, 100%);
+}
+
+.vithai-admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.vithai-admin-tabs button,
+.vithai-table-shell .aptitude-panel-heading button {
+  min-height: 40px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  color: var(--color-navy);
+  font: inherit;
+  font-weight: 950;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.vithai-admin-tabs button.active,
+.vithai-admin-tabs button:hover,
+.vithai-table-shell .aptitude-panel-heading button:hover {
+  color: #ffffff;
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+}
+
+.vithai-page-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.2rem, 3vw, 1.7rem);
+}
+
+.vithai-page-hero h2,
+.vithai-page-hero p {
+  margin: 0;
+}
+
+.vithai-page-hero h2 {
+  color: var(--color-ink);
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+}
+
+.vithai-page-hero p:not(.eyebrow) {
+  margin-top: 0.55rem;
+  color: var(--color-slate);
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.vithai-table-shell {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  overflow: hidden;
+}
+
+.vithai-table-shell .aptitude-panel-heading {
+  padding: 1rem 1.2rem 0;
+}
+
+.vithai-table-wrap {
+  overflow-x: auto;
+}
+
+.vithai-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.vithai-table th,
+.vithai-table td {
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.85rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.vithai-table th {
+  color: var(--color-ink);
+  font-size: 0.8rem;
+  font-weight: 950;
+  background: #f8fafc;
+}
+
+.vithai-table td {
+  color: var(--color-slate);
+  font-weight: 750;
+}
+
+.vithai-table td strong,
+.vithai-table td span {
+  display: block;
+}
+
+.vithai-table td strong {
+  color: var(--color-ink);
+}
+
+.vithai-table td span {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.vithai-table input {
+  width: 76px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  color: var(--color-ink);
+}
+
+.vithai-table button {
+  margin-left: 0.4rem;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.48rem 0.7rem;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 950;
+  background: var(--color-navy);
+  cursor: pointer;
+}
+
+.vithai-count-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid #cfd7ff;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #eef2ff;
+}
+
+.vithai-count-box div {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.vithai-count-box div:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.vithai-count-box strong {
+  color: var(--color-ink);
+}
+
+.vithai-count-box span {
+  color: var(--color-muted);
+  font-weight: 800;
+}
+
+.vithai-count-box button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  color: var(--color-navy);
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 950;
+  background: #ffffff;
+  cursor: pointer;
+}
+
 .aptitude-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
@@ -1408,6 +1587,69 @@ h4 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 1rem;
+}
+
+.vithai-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 0.45rem;
+  background: #f8fafc;
+}
+
+.vithai-mode-tabs button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--color-slate);
+  font: inherit;
+  font-weight: 950;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.vithai-mode-tabs button:hover,
+.vithai-mode-tabs button:focus-visible,
+.vithai-mode-tabs button.active {
+  color: #ffffff;
+  background: var(--color-navy);
+  transform: translateY(-1px);
+}
+
+.vithai-generation-note,
+.vithai-generated-preview {
+  display: grid;
+  gap: 0.55rem;
+  border: 1px solid rgba(185, 130, 47, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fffaf0;
+}
+
+.vithai-generation-note strong,
+.vithai-generated-preview strong {
+  color: var(--color-ink);
+}
+
+.vithai-generation-note p,
+.vithai-generated-preview li {
+  margin: 0;
+  color: var(--color-slate);
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.vithai-generated-preview ol {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1.2rem;
 }
 
 .aptitude-question-builder,
@@ -1631,6 +1873,10 @@ h4 {
 
 @media (max-width: 900px) {
   .aptitude-panel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vithai-mode-tabs {
     grid-template-columns: 1fr;
   }
 

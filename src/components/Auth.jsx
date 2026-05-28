@@ -38,8 +38,8 @@ const EMAIL_PATTERN_EXEMPTIONS = (
   import.meta.env.VITE_EMAIL_PATTERN_EXEMPT_EMAILS ||
   ""
 )
-  .split(",")
-  .map((email) => email.trim().toLowerCase())
+  .split(/[,;\s]+/)
+  .map((email) => email.trim().replace(/^["']|["']$/g, "").toLowerCase())
   .filter(Boolean);
 const EMAIL_PATTERN_ERROR = "College email ID must match the 4ALXXIC0XX pattern.";
 const initialPasswordVisibility = {
