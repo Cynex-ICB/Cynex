@@ -1562,6 +1562,7 @@ function CoordinatorAssignmentsPage({ token }) {
       coordinator,
     };
   });
+  const assignedCoordinatorSemesters = studentsBySemester.filter((item) => item.coordinator);
 
   return (
     <section className="admin-grid admin-route-panel">
@@ -1629,16 +1630,23 @@ function CoordinatorAssignmentsPage({ token }) {
         </div>
 
         <div className="student-list">
-          {studentsBySemester.map((item) => (
-            <article className="card student-card" key={item.semester}>
-              <div className="student-card-top">
-                <span>Semester {item.semester}</span>
-                <small>{item.count} students</small>
-              </div>
-              <h3>{item.coordinator?.name || "Not assigned"}</h3>
-              {item.coordinator?.teacherId ? <small>ID: {item.coordinator.teacherId}</small> : null}
-            </article>
-          ))}
+          {assignedCoordinatorSemesters.length ? (
+            assignedCoordinatorSemesters.map((item) => (
+              <article className="card student-card" key={item.semester}>
+                <div className="student-card-top">
+                  <span>Semester {item.semester}</span>
+                  <small>{item.count} students</small>
+                </div>
+                <h3>{item.coordinator.name}</h3>
+                {item.coordinator.teacherId ? <small>ID: {item.coordinator.teacherId}</small> : null}
+              </article>
+            ))
+          ) : (
+            <div className="card empty-state">
+              <h3>No coordinators assigned</h3>
+              <p>Assigned semesters will appear here.</p>
+            </div>
+          )}
         </div>
       </div>
     </section>
