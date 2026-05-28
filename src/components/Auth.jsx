@@ -8,6 +8,7 @@ const initialFields = {
   collegeEmail: "",
   password: "",
   newPassword: "",
+  confirmPassword: "",
   usn: "",
   semester: "3",
   otp: "",
@@ -41,6 +42,11 @@ const EMAIL_PATTERN_EXEMPTIONS = (
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean);
 const EMAIL_PATTERN_ERROR = "College email ID must match the 4ALXXIC0XX pattern.";
+const initialPasswordVisibility = {
+  password: false,
+  newPassword: false,
+  confirmPassword: false,
+};
 
 function isAllowedCollegeEmail(email) {
   const normalizedEmail = email.trim().toLowerCase();
@@ -61,6 +67,33 @@ function getModeFromPath(pathname) {
   return "login";
 }
 
+function PasswordField({ label, name, placeholder, value, isVisible, onChange, onToggle }) {
+  return (
+    <label className="auth-field">
+      <span>{label}</span>
+      <div className="auth-password-control">
+        <input
+          name={name}
+          type={isVisible ? "text" : "password"}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          minLength="8"
+          required
+        />
+        <button
+          type="button"
+          className="auth-password-toggle"
+          onClick={() => onToggle(name)}
+          aria-label={isVisible ? `Hide ${label}` : `Show ${label}`}
+        >
+          {isVisible ? "Hide" : "Show"}
+        </button>
+      </div>
+    </label>
+  );
+}
+
 function Auth({ onAuthenticated }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,6 +103,7 @@ function Auth({ onAuthenticated }) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignupOtpPending, setIsSignupOtpPending] = useState(false);
+  const [passwordVisibility, setPasswordVisibility] = useState(initialPasswordVisibility);
 
   const resetToken = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -116,6 +150,7 @@ function Auth({ onAuthenticated }) {
     setMode(nextMode);
     setIsSignupOtpPending(false);
     setFields(initialFields);
+    setPasswordVisibility(initialPasswordVisibility);
     clearMessages();
   };
 
@@ -142,6 +177,13 @@ function Auth({ onAuthenticated }) {
     });
 
     return Boolean(data.allowed);
+  };
+
+  const togglePasswordVisibility = (fieldName) => {
+    setPasswordVisibility((currentVisibility) => ({
+      ...currentVisibility,
+      [fieldName]: !currentVisibility[fieldName],
+    }));
   };
 
   const handleSubmit = async (event) => {
@@ -209,6 +251,11 @@ function Auth({ onAuthenticated }) {
       }
 
       if (mode === "reset" && resetToken) {
+        if (fields.newPassword !== fields.confirmPassword) {
+          setError("Passwords do not match.");
+          return;
+        }
+
         const data = await callApi(`/auth/reset-password/${resetToken}`, {
           method: "POST",
           body: JSON.stringify({ password: fields.newPassword }),
@@ -218,6 +265,7 @@ function Auth({ onAuthenticated }) {
       }
 
       setFields(initialFields);
+      setPasswordVisibility(initialPasswordVisibility);
       setIsSignupOtpPending(false);
     } catch (apiError) {
       setError(apiError.message);
@@ -318,18 +366,15 @@ function Auth({ onAuthenticated }) {
           ) : null}
 
           {showPassword ? (
-            <label className="auth-field">
-              <span>Password</span>
-              <input
-                name="password"
-                type="password"
-                placeholder="At least 8 characters"
-                value={fields.password}
-                onChange={updateField}
-                minLength="8"
-                required
-              />
-            </label>
+            <PasswordField
+              label="Password"
+              name="password"
+              placeholder="At least 8 characters"
+              value={fields.password}
+              isVisible={passwordVisibility.password}
+              onChange={updateField}
+              onToggle={togglePasswordVisibility}
+            />
           ) : null}
 
           {showSignupDetails ? (
@@ -375,18 +420,27 @@ function Auth({ onAuthenticated }) {
           ) : null}
 
           {showNewPassword ? (
-            <label className="auth-field">
-              <span>New password</span>
-              <input
+            <>
+              <PasswordField
+                label="New password"
                 name="newPassword"
-                type="password"
                 placeholder="Create a stronger password"
                 value={fields.newPassword}
+                isVisible={passwordVisibility.newPassword}
                 onChange={updateField}
-                minLength="8"
-                required
+                onToggle={togglePasswordVisibility}
               />
-            </label>
+
+              <PasswordField
+                label="Confirm password"
+                name="confirmPassword"
+                placeholder="Re-enter your new password"
+                value={fields.confirmPassword}
+                isVisible={passwordVisibility.confirmPassword}
+                onChange={updateField}
+                onToggle={togglePasswordVisibility}
+              />
+            </>
           ) : null}
 
           {status ? <p className="form-message success">{status}</p> : null}

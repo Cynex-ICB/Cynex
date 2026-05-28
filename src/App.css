@@ -797,6 +797,43 @@ h4 {
   color: #667085;
 }
 
+.auth-password-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-password-control input {
+  padding-right: 5rem;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 0.55rem;
+  min-width: 64px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--color-navy);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  background: #edf2f7;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.auth-password-toggle:hover,
+.auth-password-toggle:focus-visible {
+  color: #ffffff;
+  background: var(--color-navy-soft);
+  outline: none;
+  transform: translateY(-1px);
+}
+
 .auth-card select {
   width: 100%;
   min-height: 50px;
