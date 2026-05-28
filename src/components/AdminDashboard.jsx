@@ -334,7 +334,9 @@ function AcademicContentPage({ token }) {
       setForm(initialMaterialForm);
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
-      if (data.notification?.error) {
+      if (data.notification?.queued) {
+        setStatus("Academic post published. Student email notification is being sent in the background.");
+      } else if (data.notification?.error) {
         setStatus("Academic post published, but email notification failed.");
       } else if (data.notification?.previewOnly && data.notification?.notified) {
         setStatus(`Academic post published. Email preview generated for ${data.notification.notified} students.`);

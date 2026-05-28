@@ -446,23 +446,38 @@ h4 {
   border-radius: 999px;
   color: #101828;
   font-weight: 800;
-  background: var(--color-accent);
+  background:
+    linear-gradient(120deg, transparent 0 28%, rgba(255, 255, 255, 0.34) 42%, transparent 56%) -140% 0 / 220% 100% no-repeat,
+    var(--color-accent);
   box-shadow: 0 14px 30px rgba(185, 130, 47, 0.22);
   transition:
     background-color 180ms ease,
+    background-position 420ms ease,
     transform 180ms ease,
     box-shadow 180ms ease;
 }
 
 .primary-button:hover,
 .primary-button:focus-visible {
-  background: #d79a3c;
+  background:
+    linear-gradient(120deg, transparent 0 28%, rgba(255, 255, 255, 0.34) 42%, transparent 56%) 120% 0 / 220% 100% no-repeat,
+    #d79a3c;
+  background-position: 120% 0;
   box-shadow: 0 18px 36px rgba(185, 130, 47, 0.28);
   transform: translateY(-2px);
 }
 
 .section {
   padding: 4.5rem clamp(1rem, 5vw, 5rem);
+  animation: content-reveal 520ms ease both;
+}
+
+.section:nth-of-type(2n) {
+  animation-delay: 60ms;
+}
+
+.section:nth-of-type(3n) {
+  animation-delay: 110ms;
 }
 
 .alt-section {
@@ -486,10 +501,29 @@ h4 {
   border-radius: 8px;
   background: var(--color-panel);
   box-shadow: var(--shadow-card);
+  animation: card-reveal 460ms ease both;
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease,
     transform 180ms ease;
+}
+
+.grid>.card:nth-child(2),
+.material-list>.card:nth-child(2),
+.student-list>.card:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.grid>.card:nth-child(3),
+.material-list>.card:nth-child(3),
+.student-list>.card:nth-child(3) {
+  animation-delay: 110ms;
+}
+
+.grid>.card:nth-child(4),
+.material-list>.card:nth-child(4),
+.student-list>.card:nth-child(4) {
+  animation-delay: 150ms;
 }
 
 .card h3,
@@ -503,6 +537,30 @@ h4 {
   border-color: rgba(185, 130, 47, 0.42);
   box-shadow: var(--shadow-card-hover);
   transform: translateY(-3px);
+}
+
+@keyframes content-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .about-card,
