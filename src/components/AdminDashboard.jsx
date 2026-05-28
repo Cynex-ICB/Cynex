@@ -1848,7 +1848,7 @@ function StudentAccountsPage({ token }) {
   const [manualError, setManualError] = useState("");
   const [bulkStatus, setBulkStatus] = useState("");
   const [bulkError, setBulkError] = useState("");
-  const [selectedStudentSemester, setSelectedStudentSemester] = useState("all");
+  const [selectedStudentSemester, setSelectedStudentSemester] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const bulkFileInputRef = useRef(null);
@@ -1946,10 +1946,9 @@ function StudentAccountsPage({ token }) {
     }
   };
 
-  const visibleStudents =
-    selectedStudentSemester === "all"
-      ? students
-      : students.filter((student) => String(student.semester) === selectedStudentSemester);
+  const visibleStudents = selectedStudentSemester
+    ? students.filter((student) => String(student.semester) === selectedStudentSemester)
+    : [];
 
   return (
     <section className="admin-grid admin-route-panel">
@@ -2097,7 +2096,7 @@ function StudentAccountsPage({ token }) {
               value={selectedStudentSemester}
               onChange={(event) => setSelectedStudentSemester(event.target.value)}
             >
-              <option value="all">All semesters</option>
+              <option value="">Select semester</option>
               {semesterOptions.map((semester) => (
                 <option key={semester} value={semester}>
                   Semester {semester}
@@ -2106,12 +2105,19 @@ function StudentAccountsPage({ token }) {
             </select>
           </label>
           <span>
-            Showing {visibleStudents.length} of {students.length} student account(s).
+            {selectedStudentSemester
+              ? `Showing ${visibleStudents.length} student account(s) from Semester ${selectedStudentSemester}.`
+              : "Choose a semester to view student accounts."}
           </span>
         </div>
 
         <div className="student-list">
-          {visibleStudents.length ? (
+          {!selectedStudentSemester ? (
+            <div className="card empty-state">
+              <h3>Select a semester</h3>
+              <p>Student accounts will appear after choosing a semester.</p>
+            </div>
+          ) : visibleStudents.length ? (
             visibleStudents.map((student) => (
               <article className="card student-card" key={student.id}>
                 <div className="student-card-top">
@@ -2127,7 +2133,7 @@ function StudentAccountsPage({ token }) {
           ) : (
             <div className="card empty-state">
               <h3>No student accounts found</h3>
-              <p>Create student access from the form or change the semester filter.</p>
+              <p>Create student access for this semester or choose another semester.</p>
             </div>
           )}
         </div>
