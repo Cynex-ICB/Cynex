@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BarChart3, BookOpenCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart3, BookOpenCheck } from "lucide-react";
 import LoadingSkeleton from "../../components/LoadingSkeleton";
 import StatCard from "../../components/StatCard";
 import { apiFetch, formatDateTime } from "../../utils/api";
@@ -24,16 +24,20 @@ export default function StudentDashboard() {
   if (!stats) return <LoadingSkeleton label="Loading dashboard" />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
+    <section className="page-stack">
+      <div className="page-hero flex flex-wrap items-center justify-between gap-4">
+        <Link to="/aptitude" className="btn-secondary self-start">
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Link>
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-accent">Student Overview</p>
+          <p className="eyebrow">Student Overview</p>
           <h2 className="mt-2 text-3xl font-black text-ink">Practice dashboard</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
             Track available assessments, score trends, topic strength, and recent submissions.
           </p>
         </div>
-        <Link to="/aptitude/student/assessments" className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-accent/20">
+        <Link to="/aptitude/student/assessments" className="btn-primary">
           <BookOpenCheck className="h-4 w-4" />
           Start Practice
         </Link>
@@ -49,7 +53,7 @@ export default function StudentDashboard() {
         <StatCard label="Average Score" value={`${stats.average_percentage}%`} tone="coral" />
       </div>
 
-      <div className="rounded-md border border-line bg-white p-5">
+      <section className="surface p-5">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-accent" />
           <h3 className="text-lg font-black text-ink">Topic Performance</h3>
@@ -77,9 +81,9 @@ export default function StudentDashboard() {
             <p className="text-sm text-slate-500">No topic analytics yet.</p>
           )}
         </div>
-      </div>
+      </section>
 
-      <div className="overflow-hidden rounded-md border border-line bg-white">
+      <section className="table-shell">
         <div className="border-b border-line px-5 py-4">
           <h3 className="text-lg font-black text-ink">My Submission Analytics</h3>
           <p className="text-sm text-slate-500">Your latest submitted attempts</p>
@@ -115,13 +119,7 @@ export default function StudentDashboard() {
                       <p className="text-xs text-slate-500">Limit: {submission.duration_minutes}m</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-block rounded-md px-2 py-0.5 text-xs font-bold ${
-                          submission.passed
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-red-50 text-red-600"
-                        }`}
-                      >
+                      <span className={`badge ${submission.passed ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
                         {submission.passed ? "Passed" : "Failed"}
                       </span>
                     </td>
@@ -138,7 +136,7 @@ export default function StudentDashboard() {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+      </section>
+    </section>
   );
 }

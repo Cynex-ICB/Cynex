@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { ArrowLeft, Link } from "react-router-dom";
 import LoadingSkeleton from "../../components/LoadingSkeleton";
 import { apiFetch, formatDateTime } from "../../utils/api";
 
@@ -13,9 +13,13 @@ export default function StudentResults() {
   if (!results) return <LoadingSkeleton label="Loading results" />;
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-line pb-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-accent">Performance Archive</p>
+    <section className="page-stack">
+      <div className="page-hero">
+        <Link to="/aptitude" className="btn-secondary self-start">
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Link>
+        <p className="eyebrow">Performance Archive</p>
         <h2 className="mt-2 text-3xl font-black text-ink">My Results</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
           Review submitted attempts, scores, pass status, explanations, and topic analytics.
@@ -37,7 +41,7 @@ export default function StudentResults() {
               </div>
               <div className="text-right">
                 <p className="text-2xl font-black text-ink">{result.percentage}%</p>
-                <p className={result.passed ? "text-sm font-bold text-emerald-700" : "text-sm font-bold text-red-600"}>
+                <p className={`text-sm font-bold ${result.passed ? "text-emerald-700" : "text-red-600"}`}>
                   {result.passed ? "Passed" : "Failed"}
                 </p>
               </div>
@@ -45,11 +49,11 @@ export default function StudentResults() {
           </Link>
         ))}
         {!results.length ? (
-          <div className="rounded-md border border-line bg-white p-8 text-center text-sm font-semibold text-slate-500">
+          <div className="surface p-8 text-center text-sm font-semibold text-slate-500">
             No submitted attempts yet.
           </div>
         ) : null}
       </div>
-    </div>
+    </section>
   );
 }

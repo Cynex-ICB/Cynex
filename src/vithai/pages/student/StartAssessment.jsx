@@ -156,7 +156,7 @@ export default function StartAssessment() {
 
   if (!started) {
     return (
-      <div className="mx-auto max-w-3xl overflow-hidden rounded-md border border-line bg-white shadow-card">
+      <section className="mx-auto max-w-3xl overflow-hidden rounded-md border border-line bg-white shadow-lift">
         <div className="bg-navy p-6 text-white">
           <p className="text-xs font-bold uppercase text-accent">Ready to begin</p>
           <h2 className="mt-2 text-3xl font-black">{data.assessment.title}</h2>
@@ -179,12 +179,12 @@ export default function StartAssessment() {
           </div>
           <button
             onClick={() => setStarted(true)}
-            className="mt-6 inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-accent/20"
+            className="btn-primary mt-6"
           >
             Start
           </button>
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -192,10 +192,10 @@ export default function StartAssessment() {
   const selected = answers[question.id];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+    <section className="page-stack">
+      <div className="page-hero flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-accent">Live Assessment</p>
+          <p className="eyebrow">Live Assessment</p>
           <h2 className="mt-1 text-2xl font-black text-ink">{data.assessment.title}</h2>
           <p className="text-sm text-slate-500">
             Question {current + 1} of {data.questions.length} &middot; Warnings {warnings}/3
@@ -234,7 +234,7 @@ export default function StartAssessment() {
             <button
               disabled={current === 0}
               onClick={() => setCurrent((value) => value - 1)}
-              className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-surface focus:outline-none focus:ring-2 focus:ring-line disabled:opacity-50"
+              className="btn-secondary"
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
@@ -242,7 +242,7 @@ export default function StartAssessment() {
             <button
               disabled={current === data.questions.length - 1}
               onClick={() => setCurrent((value) => value + 1)}
-              className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-surface focus:outline-none focus:ring-2 focus:ring-line disabled:opacity-50"
+              className="btn-secondary"
             >
               Next
               <ChevronRight className="h-4 w-4" />
@@ -272,13 +272,13 @@ export default function StartAssessment() {
           <button
             disabled={submitting}
             onClick={submit}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-md bg-navy px-4 py-2 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-navy/20 disabled:opacity-60"
+            className="btn-dark mt-5 w-full"
           >
             <CheckCircle className="h-4 w-4" />
             {submitting ? "Submitting..." : "Submit Assessment"}
           </button>
         </aside>
       </div>
-    </div>
+    </section>
   );
 }

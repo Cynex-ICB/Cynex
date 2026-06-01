@@ -15,9 +15,9 @@ export default function ResultDetails() {
   if (!data) return <LoadingSkeleton label="Loading result" />;
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-line pb-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-accent">Result Review</p>
+    <section className="page-stack">
+      <div className="page-hero">
+        <p className="eyebrow">Result Review</p>
         <h2 className="mt-2 text-3xl font-black text-ink">{data.assessment.title}</h2>
         <p className="text-sm text-slate-500">
           {data.assessment.concept} &middot; {data.assessment.difficulty}
@@ -25,7 +25,7 @@ export default function ResultDetails() {
       </div>
       <ResultSummary attempt={data.attempt} assessment={data.assessment} />
 
-      <div className="rounded-md border border-line bg-white p-5">
+      <section className="surface p-5">
         <h3 className="font-black text-ink">Topic-wise Performance</h3>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {data.topic_analytics.map((topic) => (
@@ -43,14 +43,14 @@ export default function ResultDetails() {
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="space-y-4">
+      <section className="space-y-4">
         {data.answers.map((answer, index) => (
           <article key={answer.id} className="rounded-md border border-line bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="font-black text-ink">Question {index + 1}</h3>
-              <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-bold ${answer.is_correct ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+              <span className={`badge ${answer.is_correct ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
                 {answer.is_correct ? "Correct" : "Incorrect"} &middot; {answer.marks_awarded} marks
               </span>
             </div>
@@ -87,7 +87,7 @@ export default function ResultDetails() {
             </div>
           </article>
         ))}
-      </div>
-    </div>
+      </section>
+    </section>
   );
 }
