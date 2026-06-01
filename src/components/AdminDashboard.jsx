@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { API_BASE_URL, downloadApiFile, readApiJson } from "../utils/api.js";
+import { ToastProvider } from "../vithai/context/ToastContext.jsx";
+import AptCreateAssessment from "../vithai/pages/admin/CreateAssessment.jsx";
+import AptAdminAssessments from "../vithai/pages/admin/AdminAssessments.jsx";
+import AptQuestionReview from "../vithai/pages/admin/QuestionReview.jsx";
+import AptAssessmentResults from "../vithai/pages/admin/AssessmentResults.jsx";
 
 const initialMaterialForm = {
   title: "",
@@ -180,6 +185,15 @@ function AdminDashboard({ user, token, onLogout }) {
                 <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
                   CIE Marks Overview
                 </NavLink>
+                <NavLink to="/admin/aptitude/assessments/create" onClick={closeAdminSidebar}>
+                  Create Assessment
+                </NavLink>
+                <NavLink to="/admin/aptitude/assessments" onClick={closeAdminSidebar}>
+                  Assessment Library
+                </NavLink>
+                <NavLink to="/admin/assessment-analytics" onClick={closeAdminSidebar}>
+                  Assessment Analytics
+                </NavLink>
               </>
             ) : (
               <>
@@ -194,6 +208,18 @@ function AdminDashboard({ user, token, onLogout }) {
                 </NavLink>
                 <NavLink to="/admin/cie-marks" onClick={closeAdminSidebar}>
                   CIE Marks
+                </NavLink>
+                <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
+                  CIE Marks Overview
+                </NavLink>
+                <NavLink to="/admin/aptitude/assessments/create" onClick={closeAdminSidebar}>
+                  Create Assessment
+                </NavLink>
+                <NavLink to="/admin/aptitude/assessments" onClick={closeAdminSidebar}>
+                  Assessment Library
+                </NavLink>
+                <NavLink to="/admin/assessment-analytics" onClick={closeAdminSidebar}>
+                  Assessment Analytics
                 </NavLink>
               </>
             )}
@@ -237,6 +263,7 @@ function AdminDashboard({ user, token, onLogout }) {
                 <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />
                 <Route path="mentors" element={<MentorAssignmentsPage token={token} />} />
                 <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
+                <Route path="assessment-analytics" element={<AssessmentAnalyticsPage token={token} />} />
               </>
             ) : (
               <>
@@ -244,8 +271,14 @@ function AdminDashboard({ user, token, onLogout }) {
                 <Route path="activity-alerts" element={<ActivityAlertsPage token={token} />} />
                 <Route path="showcase" element={<ShowcaseContentPage token={token} />} />
                 <Route path="cie-marks" element={<CieMarksPage token={token} />} />
+                <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
+                <Route path="assessment-analytics" element={<AssessmentAnalyticsPage token={token} />} />
               </>
             )}
+            <Route path="aptitude/assessments" element={<ToastProvider><AptAdminAssessments /></ToastProvider>} />
+            <Route path="aptitude/assessments/create" element={<ToastProvider><AptCreateAssessment /></ToastProvider>} />
+            <Route path="aptitude/assessments/:id/questions" element={<ToastProvider><AptQuestionReview /></ToastProvider>} />
+            <Route path="aptitude/assessments/:id/results" element={<ToastProvider><AptAssessmentResults /></ToastProvider>} />
             <Route path="*" element={<Navigate to={defaultRoute} replace />} />
           </Routes>
         </div>
@@ -1042,6 +1075,166 @@ function CieMarksPage({ token }) {
           )}
         </div>
       </div>
+    </section>
+  );
+}
+
+function AssessmentAnalyticsPage({ token }) {
+  const [stats, setStats] = useState(null);
+  const [error, setError] = useState("");
+  const authHeaders = getAuthHeaders(token);
+
+  useEffect(() => {
+    loadStats();
+  }, [token]);
+
+  const loadStats = async () => {
+    setError("");
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/aptitude/admin/dashboard`, {
+          headers: authHeaders,
+        })
+      );
+      setStats(data);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
+  };
+
+  function formatDuration(seconds) {
+    if (!seconds) return "0m";
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ${minutes % 60}m`;
+  }
+
+  function formatDateTime(dateStr) {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return (
+    <section className="admin-route-panel">
+      <div className="card admin-form">
+        <div>
+          <p className="eyebrow">Assessment Analytics</p>
+          <h2>Monitor aptitude assessment performance</h2>
+          <span className="admin-file-hint">
+            Overview of all assessments, submissions, pass rates, and student performance.
+          </span>
+        </div>
+      </div>
+
+      {error ? <p className="form-message error">{error}</p> : null}
+
+      {!stats ? (
+        <div className="card empty-state">
+          <h3>Loading analytics...</h3>
+        </div>
+      ) : (
+        <>
+          <div className="cie-overview-stats">
+            <article className="card">
+              <span>Assessments</span>
+              <strong>{stats.assessments}</strong>
+            </article>
+            <article className="card">
+              <span>Published</span>
+              <strong style={{ color: "var(--color-accent)" }}>{stats.published}</strong>
+            </article>
+            <article className="card">
+              <span>Students</span>
+              <strong>{stats.students}</strong>
+            </article>
+            <article className="card">
+              <span>Submissions</span>
+              <strong>{stats.submitted_attempts}</strong>
+            </article>
+          </div>
+          <div className="cie-overview-stats">
+            <article className="card">
+              <span>In Progress</span>
+              <strong>{stats.in_progress_attempts}</strong>
+            </article>
+            <article className="card">
+              <span>Pass Rate</span>
+              <strong style={{ color: "var(--color-accent)" }}>{stats.pass_rate}%</strong>
+            </article>
+            <article className="card">
+              <span>Average Score</span>
+              <strong>{stats.average_percentage}%</strong>
+            </article>
+          </div>
+
+          <div className="card cie-overview-table-card">
+            <div className="cie-overview-header" style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--color-line)" }}>
+              <p className="eyebrow">Submissions</p>
+              <h2>Latest student submissions</h2>
+            </div>
+            <div className="cie-sheet-table-wrap">
+              <table className="cie-sheet-table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Assessment</th>
+                    <th>Concept</th>
+                    <th>Marks</th>
+                    <th>Percentage</th>
+                    <th>Result</th>
+                    <th>Submitted</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.submissions?.length ? (
+                    stats.submissions.map((submission) => (
+                      <tr key={submission.id}>
+                        <td>
+                          <strong>{submission.student_name}</strong>
+                          <br /><small>{submission.email}</small>
+                        </td>
+                        <td>{submission.assessment_title}</td>
+                        <td>{submission.concept}</td>
+                        <td>{submission.score}/{submission.total_marks}</td>
+                        <td><strong>{submission.percentage}%</strong></td>
+                        <td>
+                          <span style={{
+                            display: "inline-block",
+                            padding: "0.125rem 0.5rem",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            borderRadius: "4px",
+                            background: submission.passed ? "rgba(5, 150, 105, 0.1)" : "rgba(220, 38, 38, 0.1)",
+                            color: submission.passed ? "#059669" : "#dc2626",
+                          }}>
+                            {submission.passed ? "Passed" : "Failed"}
+                          </span>
+                        </td>
+                        <td>{formatDateTime(submission.submitted_at)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: "center", padding: "2rem", color: "#6b7280" }}>
+                        No submissions yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
     </section>
   );
 }

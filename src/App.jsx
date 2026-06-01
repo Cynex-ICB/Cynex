@@ -16,6 +16,18 @@ import AdminDashboard from './components/AdminDashboard.jsx';
 import InstallPrompt from './components/InstallPrompt.jsx';
 import Profile from './components/Profile.jsx';
 import { API_BASE_URL, readApiJson } from './utils/api.js';
+import { ToastProvider } from './vithai/context/ToastContext.jsx';
+import AptitudeLanding from './vithai/pages/AptitudeLanding.jsx';
+import AdminDashboardApt from './vithai/pages/admin/AdminDashboard.jsx';
+import AdminAssessments from './vithai/pages/admin/AdminAssessments.jsx';
+import CreateAssessment from './vithai/pages/admin/CreateAssessment.jsx';
+import QuestionReview from './vithai/pages/admin/QuestionReview.jsx';
+import AssessmentResults from './vithai/pages/admin/AssessmentResults.jsx';
+import StudentDashboardApt from './vithai/pages/student/StudentDashboard.jsx';
+import StudentAssessments from './vithai/pages/student/StudentAssessments.jsx';
+import StartAssessment from './vithai/pages/student/StartAssessment.jsx';
+import StudentResults from './vithai/pages/student/StudentResults.jsx';
+import ResultDetails from './vithai/pages/student/ResultDetails.jsx';
 
 function readStoredUser() {
   try {
@@ -152,6 +164,42 @@ function App() {
     setAuthUser(user);
   }, []);
 
+  function AptitudeAdminLayout({ user, onLogout }) {
+    return (
+      <ToastProvider>
+        <PublicLayout user={user} onLogout={onLogout}>
+          <Routes>
+            <Route index element={<Navigate to="/aptitude/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboardApt />} />
+            <Route path="assessments" element={<AdminAssessments />} />
+            <Route path="assessments/create" element={<CreateAssessment />} />
+            <Route path="assessments/:id/questions" element={<QuestionReview />} />
+            <Route path="assessments/:id/results" element={<AssessmentResults />} />
+            <Route path="*" element={<Navigate to="/aptitude/admin/dashboard" replace />} />
+          </Routes>
+        </PublicLayout>
+      </ToastProvider>
+    );
+  }
+
+  function AptitudeStudentLayout({ user, onLogout }) {
+    return (
+      <ToastProvider>
+        <PublicLayout user={user} onLogout={onLogout}>
+          <Routes>
+            <Route index element={<Navigate to="/aptitude/student/dashboard" replace />} />
+            <Route path="dashboard" element={<StudentDashboardApt />} />
+            <Route path="assessments" element={<StudentAssessments />} />
+            <Route path="assessments/:id/start" element={<StartAssessment />} />
+            <Route path="results" element={<StudentResults />} />
+            <Route path="results/:attemptId" element={<ResultDetails />} />
+            <Route path="*" element={<Navigate to="/aptitude/student/dashboard" replace />} />
+          </Routes>
+        </PublicLayout>
+      </ToastProvider>
+    );
+  }
+
   const authElement = isAuthenticated ? (
     <Navigate to="/" replace />
   ) : (
@@ -175,8 +223,6 @@ function App() {
               />
             }
           />
-          <Route path="/signup" element={<Navigate to="/" replace />} />
-          <Route path="/reset" element={authElement} />
           <Route
             path="/admin/*"
             element={
@@ -291,6 +337,46 @@ function App() {
                 </ProtectedPublicPage>
               ) : (
                 <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+              )
+            }
+          />
+          <Route
+            path="/aptitude"
+            element={
+              isAuthenticated ? (
+                <PublicLayout user={authUser} onLogout={handleLogout}>
+                  <AptitudeLanding user={authUser} />
+                </PublicLayout>
+              ) : (
+                <Navigate to="/" replace state={{ from: location, ...loginRedirectState }} />
+              )
+            }
+          />
+          <Route
+            path="/aptitude/admin/*"
+            element={
+              isAuthenticated && ['admin', 'master-admin'].includes(authUser?.role) ? (
+                <AptitudeAdminLayout user={authUser} onLogout={handleLogout} />
+              ) : (
+                <Navigate
+                  to={isAuthenticated ? '/' : '/'}
+                  replace
+                  state={isAuthenticated ? undefined : { from: location, ...loginRedirectState }}
+                />
+              )
+            }
+          />
+          <Route
+            path="/aptitude/student/*"
+            element={
+              isAuthenticated && authUser?.role === 'student' ? (
+                <AptitudeStudentLayout user={authUser} onLogout={handleLogout} />
+              ) : (
+                <Navigate
+                  to={isAuthenticated ? '/' : '/'}
+                  replace
+                  state={isAuthenticated ? undefined : { from: location, ...loginRedirectState }}
+                />
               )
             }
           />

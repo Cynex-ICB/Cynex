@@ -7,6 +7,7 @@ const navLinks = [
   { label: 'Achievements', to: '/achievements' },
   { label: 'Placements', to: '/placements-internships' },
   { label: 'Materials', to: '/materials' },
+  { label: 'Aptitude', to: '/aptitude', end: true },
   { label: 'Profile', to: '/profile' },
   { label: 'Contact Us', to: '/contact' },
  
@@ -63,7 +64,7 @@ function Navbar({ user, onLogout }) {
                 to={link.to}
                 onClick={closeMenu}
                 className={({ isActive }) => (isActive ? 'active' : undefined)}
-                end={link.to === '/'}
+                end={link.end ?? link.to === '/'}
               >
                 {link.label}
               </NavLink>
