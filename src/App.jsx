@@ -223,6 +223,8 @@ function App() {
               />
             }
           />
+          <Route path="/signup" element={<Navigate to="/" replace />} />
+          <Route path="/reset" element={authElement} />
           <Route
             path="/admin/*"
             element={
