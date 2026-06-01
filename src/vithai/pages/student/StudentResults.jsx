@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import LoadingSkeleton from "../../components/LoadingSkeleton";
 import { apiFetch, formatDateTime } from "../../utils/api";
 
