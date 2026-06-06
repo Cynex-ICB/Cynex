@@ -84,6 +84,7 @@ function Profile({ token, user, onUserUpdate }) {
             setCieMarks(marksData.marks || []);
           }
         }
+
       } catch (loadError) {
         if (isMounted) {
           setError(loadError.message);
