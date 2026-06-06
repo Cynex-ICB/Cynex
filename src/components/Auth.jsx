@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import aietLogo from "../assets/aiet-logo.png";
 import { API_BASE_URL, readApiJson } from "../utils/api.js";
@@ -57,7 +58,7 @@ function PasswordField({ label, name, placeholder, value, isVisible, onChange, o
           onClick={() => onToggle(name)}
           aria-label={isVisible ? `Hide ${label}` : `Show ${label}`}
         >
-          {isVisible ? "Hide" : "Show"}
+          {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
       </div>
     </label>
