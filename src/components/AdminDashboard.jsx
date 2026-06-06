@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import { API_BASE_URL, downloadApiFile, readApiJson } from "../utils/api.js";
 
 const initialMaterialForm = {
@@ -134,9 +135,7 @@ function AdminDashboard({ user, token, onLogout }) {
         aria-expanded={isAdminSidebarOpen}
         onClick={() => setIsAdminSidebarOpen((current) => !current)}
       >
-        <span></span>
-        <span></span>
-        <span></span>
+        {isAdminSidebarOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
       </button>
 
       <button

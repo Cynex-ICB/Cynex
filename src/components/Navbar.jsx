@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useState } from 'react';
+import { Menu, X } from 'lucide-react';
 
 const navLinks = [
   { label: 'Home', to: '/' },
@@ -30,9 +31,7 @@ function Navbar({ user, onLogout }) {
         aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span></span>
-        <span></span>
-        <span></span>
+        {isOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
       </button>
 
       <button

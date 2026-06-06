@@ -313,47 +313,46 @@ h4 {
   z-index: 60;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 8px;
-  background: rgba(18, 35, 61, 0.96);
-  box-shadow: 0 12px 28px rgba(16, 24, 40, 0.18);
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, rgba(18, 35, 61, 0.96), rgba(28, 51, 86, 0.92));
+  box-shadow:
+    0 16px 34px rgba(16, 24, 40, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
   cursor: pointer;
   pointer-events: auto;
   transition:
     background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
     transform 180ms ease;
 }
 
 .menu-toggle:hover,
 .menu-toggle:focus-visible {
-  background: var(--color-navy-soft);
+  border-color: rgba(185, 130, 47, 0.55);
+  box-shadow:
+    0 18px 38px rgba(16, 24, 40, 0.3),
+    0 0 0 4px rgba(185, 130, 47, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  outline: none;
   transform: translateY(-1px);
 }
 
-.menu-toggle span {
-  display: block;
-  width: 20px;
-  height: 2px;
-  margin: 4px auto;
-  border-radius: 999px;
-  background: #ffffff;
-  transition:
-    opacity 180ms ease,
-    transform 180ms ease;
+.menu-toggle svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.35;
+  transition: transform 180ms ease;
 }
 
-.menu-toggle.is-open span:nth-child(1) {
-  transform: translateY(6px) rotate(45deg);
-}
-
-.menu-toggle.is-open span:nth-child(2) {
-  opacity: 0;
-}
-
-.menu-toggle.is-open span:nth-child(3) {
-  transform: translateY(-6px) rotate(-45deg);
+.menu-toggle.is-open svg {
+  transform: rotate(90deg);
 }
 
 .sidebar {
@@ -2202,37 +2201,45 @@ h4 {
     z-index: 60;
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 0;
-    border-radius: 8px;
-    background: rgba(18, 35, 61, 0.96);
-    box-shadow: 0 12px 28px rgba(16, 24, 40, 0.18);
+    width: 46px;
+    height: 46px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    color: #ffffff;
+    background:
+      linear-gradient(135deg, rgba(18, 35, 61, 0.96), rgba(28, 51, 86, 0.92));
+    box-shadow:
+      0 16px 34px rgba(16, 24, 40, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
     cursor: pointer;
-  }
-
-  .admin-sidebar-toggle span {
-    display: block;
-    width: 20px;
-    height: 2px;
-    margin: 4px auto;
-    border-radius: 999px;
-    background: #ffffff;
     transition:
-      opacity 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      color 180ms ease,
       transform 180ms ease;
   }
 
-  .admin-sidebar-toggle.is-open span:nth-child(1) {
-    transform: translateY(6px) rotate(45deg);
+  .admin-sidebar-toggle:hover,
+  .admin-sidebar-toggle:focus-visible {
+    border-color: rgba(185, 130, 47, 0.55);
+    box-shadow:
+      0 18px 38px rgba(16, 24, 40, 0.3),
+      0 0 0 4px rgba(185, 130, 47, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    outline: none;
+    transform: translateY(-1px);
   }
 
-  .admin-sidebar-toggle.is-open span:nth-child(2) {
-    opacity: 0;
+  .admin-sidebar-toggle svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2.35;
+    transition: transform 180ms ease;
   }
 
-  .admin-sidebar-toggle.is-open span:nth-child(3) {
-    transform: translateY(-6px) rotate(-45deg);
+  .admin-sidebar-toggle.is-open svg {
+    transform: rotate(90deg);
   }
 
   .admin-sidebar-backdrop {
