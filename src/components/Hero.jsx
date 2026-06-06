@@ -15,7 +15,7 @@ function Hero() {
         <h2>
           Department of CSE
           <span className="hero-subtitle">
-            IoT, Cybersecurity including Blockchain Technology
+            (IoT, Cybersecurity including Blockchain Technology)
           </span>
         </h2>
         <p>
