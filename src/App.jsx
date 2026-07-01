@@ -17,6 +17,8 @@ import InstallPrompt from './components/InstallPrompt.jsx';
 import Profile from './components/Profile.jsx';
 import { API_BASE_URL, readApiJson } from './utils/api.js';
 
+
+
 function readStoredUser() {
   try {
     const savedUser = localStorage.getItem('authUser');
