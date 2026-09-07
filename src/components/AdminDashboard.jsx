@@ -12,9 +12,7 @@ import {
   Bell,
   Sparkles,
   FileSpreadsheet,
-  ArrowLeft,
   LogOut,
-  ExternalLink,
   Trash2,
   AlertTriangle,
   Plus,
@@ -241,10 +239,10 @@ function AdminDashboard({ user, token, onLogout }) {
         >
           <div className="admin-sidebar-header">
             <Link
-              to="/"
+              to="/admin"
               onClick={closeAdminSidebar}
               className="admin-brand-link"
-              title="Return to Cynex Homepage"
+              title="Cynex Admin Portal"
             >
               <span className="text-2xl font-black tracking-tight text-white">
                 Cynex
@@ -339,15 +337,6 @@ function AdminDashboard({ user, token, onLogout }) {
             </div>
 
             <div className="admin-sidebar-actions">
-              <Link
-                className="admin-action-btn admin-back-btn"
-                to="/"
-                onClick={closeAdminSidebar}
-                title="Return to Cynex Website"
-              >
-                <ArrowLeft className="w-4 h-4 flex-shrink-0" />
-                <span>Back to Website</span>
-              </Link>
               <button
                 className="admin-action-btn admin-logout-btn"
                 type="button"
@@ -387,14 +376,6 @@ function AdminDashboard({ user, token, onLogout }) {
             </div>
 
             <div className="admin-topbar-right">
-              <Link
-                to="/"
-                className="admin-live-site-btn"
-                title="View Public Website"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Live Website</span>
-              </Link>
               <div className="admin-role-pill">
                 <span className="status-indicator"></span>
                 <span>{isMasterAdmin ? "Master Admin" : "Teacher Admin"}</span>

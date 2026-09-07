@@ -1,4 +1,4 @@
-const CACHE_NAME = "cynex-portal-v7";
+const CACHE_NAME = "cynex-portal-v8";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",

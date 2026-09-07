@@ -52,6 +52,10 @@ function PageMotion({ children, keyProp }) {
 }
 
 function PublicLayout({ user, onLogout, children }) {
+  if (['admin', 'master-admin'].includes(user?.role)) {
+    return <Navigate to="/admin" replace />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F8F9FB] text-[#111827]">
       <Navbar user={user} onLogout={onLogout} />
@@ -83,7 +87,7 @@ function App() {
     localStorage.removeItem('authUser');
     setAuthToken('');
     setAuthUser(null);
-    navigate('/', { replace: true, state });
+    navigate('/login', { replace: true, state });
   }, [navigate]);
 
   useEffect(() => {
@@ -122,7 +126,11 @@ function App() {
   const handleAuthenticated = ({ token, user }) => {
     setAuthToken(token);
     setAuthUser(user);
-    navigate('/profile', { replace: true });
+    if (['admin', 'master-admin'].includes(user?.role)) {
+      navigate('/admin', { replace: true });
+    } else {
+      navigate('/profile', { replace: true });
+    }
   };
 
   const handleUserUpdate = useCallback((user) => {
