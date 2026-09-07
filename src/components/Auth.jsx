@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Lock, Mail, ShieldCheck, ArrowLeft, LogIn, KeyRound } from "lucide-react";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import aietLogo from "../assets/aiet-logo.png";
 import { API_BASE_URL, readApiJson } from "../utils/api.js";
 
@@ -13,14 +13,14 @@ const initialFields = {
 
 const modeDetails = {
   login: {
-    eyebrow: "Welcome back",
-    title: "Login to your portal",
-    note: "Please login to continue.",
+    eyebrow: "Authorized Access",
+    title: "Student & Faculty Portal Login",
+    note: "Enter your official institutional credentials to access CIE marks, academic materials, and administrative functions.",
   },
   reset: {
-    eyebrow: "Password help",
-    title: "Reset account access",
-    note: "Request a recovery link or complete your password reset.",
+    eyebrow: "Credential Recovery",
+    title: "Reset Account Access",
+    note: "Enter your registered college email address to receive password reset instructions.",
   },
 };
 
@@ -34,15 +34,14 @@ function getModeFromPath(pathname) {
   if (pathname === "/reset") {
     return "reset";
   }
-
   return "login";
 }
 
 function PasswordField({ label, name, placeholder, value, isVisible, onChange, onToggle }) {
   return (
-    <label className="auth-field">
-      <span>{label}</span>
-      <div className="auth-password-control">
+    <div className="space-y-1.5 text-left">
+      <label className="text-xs font-semibold text-academic-navy block">{label}</label>
+      <div className="relative">
         <input
           name={name}
           type={isVisible ? "text" : "password"}
@@ -51,17 +50,18 @@ function PasswordField({ label, name, placeholder, value, isVisible, onChange, o
           onChange={onChange}
           minLength="8"
           required
+          className="w-full px-3.5 py-2.5 pr-10 rounded border border-academic-border bg-white text-xs text-academic-text focus:outline-none focus:ring-2 focus:ring-academic-navy/20"
         />
         <button
           type="button"
-          className="auth-password-toggle"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
           onClick={() => onToggle(name)}
           aria-label={isVisible ? `Hide ${label}` : `Show ${label}`}
         >
-          {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+          {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
       </div>
-    </label>
+    </div>
   );
 }
 
@@ -89,7 +89,7 @@ function Auth({ onAuthenticated }) {
   useEffect(() => {
     const nextMode = getModeFromPath(location.pathname);
     setMode(nextMode);
-    setStatus(location.state?.authMessage || (nextMode === "login" ? "Please login to continue." : ""));
+    setStatus(location.state?.authMessage || "");
     setError("");
   }, [location.pathname, location.state]);
 
@@ -194,109 +194,163 @@ function Auth({ onAuthenticated }) {
   const showEmail = mode !== "reset" || !resetToken;
   const showNewPassword = mode === "reset" && resetToken;
   const submitLabel = {
-    login: "Log In",
-    reset: resetToken ? "Reset Password" : "Send Reset Link",
+    login: "Sign In to Portal",
+    reset: resetToken ? "Update Password" : "Send Recovery Link",
   }[mode];
   const currentMode = modeDetails[mode];
 
   return (
-    <section className="section auth-section" id="login">
-      <div className="auth-layout">
-        <div className="auth-welcome">
-          <span className="auth-welcome-logo">
-            <img src={aietLogo} alt="AIET logo" />
-          </span>
+    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6">
+      <div className="w-full max-w-md space-y-6">
+        
+        {/* Department Identity Header */}
+        <div className="text-center space-y-3">
+          <Link to="/" className="inline-block hover:opacity-90 transition-opacity">
+            <img src={aietLogo} alt="AIET Crest" className="w-16 h-16 mx-auto object-contain drop-shadow-sm" />
+          </Link>
           <div>
-            <p>Welcome to</p>
-            <h1>Department of CSE(IoT, Cybersecurity,including Blockchain Technology)</h1>
+            <span className="text-[11px] font-mono text-academic-gold-dark uppercase tracking-widest block font-semibold">
+              Alva&apos;s Institute of Engineering &amp; Technology
+            </span>
+            <h1 className="text-xl font-extrabold text-academic-navy tracking-tight mt-0.5">
+              Department of CSE (ICB)
+            </h1>
+            <p className="text-xs text-academic-text-muted">
+              CYNEX Academic &amp; Evaluation Portal
+            </p>
           </div>
         </div>
 
-        <form className="card auth-card" onSubmit={handleSubmit}>
-          <div className="auth-form-heading">
-            <p>{currentMode.eyebrow}</p>
-            <h2>{currentMode.title}</h2>
-            <span>{currentMode.note}</span>
+        {/* Form Card */}
+        <div className="institutional-card p-6 sm:p-8 shadow-card">
+          <div className="border-b border-academic-border pb-4 mb-5">
+            <span className="text-[10px] font-mono text-academic-gold-dark uppercase tracking-wider block font-semibold">
+              {currentMode.eyebrow}
+            </span>
+            <h2 className="text-lg font-bold text-academic-navy mt-0.5">
+              {currentMode.title}
+            </h2>
+            <p className="text-xs text-academic-text-muted mt-1 leading-relaxed">
+              {currentMode.note}
+            </p>
           </div>
 
-          {showEmail ? (
-            <label className="auth-field">
-              <span>College Email</span>
-              <input
-                name="collegeEmail"
-                type="email"
-                placeholder="name@aiet.org.in"
-                value={fields.collegeEmail}
-                onChange={updateField}
-                required
-              />
-            </label>
-          ) : null}
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            {showEmail && (
+              <div className="space-y-1.5 text-left">
+                <label className="font-semibold text-academic-navy block">Institutional Email Address</label>
+                <div className="relative">
+                  <input
+                    name="collegeEmail"
+                    type="email"
+                    placeholder="name@aiet.org.in"
+                    value={fields.collegeEmail}
+                    onChange={updateField}
+                    required
+                    className="w-full px-3.5 py-2.5 rounded border border-academic-border bg-white text-xs text-academic-text focus:outline-none focus:ring-2 focus:ring-academic-navy/20"
+                  />
+                </div>
+              </div>
+            )}
 
-          {showPassword ? (
-            <PasswordField
-              label="Password"
-              name="password"
-              placeholder="At least 8 characters"
-              value={fields.password}
-              isVisible={passwordVisibility.password}
-              onChange={updateField}
-              onToggle={togglePasswordVisibility}
-            />
-          ) : null}
-
-          {mode === "login" ? (
-            <p className="auth-helper-row">
-              <span>Forgot your password?</span>
-              <button type="button" onClick={() => goToMode("reset")}>
-                Reset password
-              </button>
-            </p>
-          ) : null}
-
-          {showNewPassword ? (
-            <>
+            {showPassword && (
               <PasswordField
-                label="New password"
-                name="newPassword"
-                placeholder="Create a stronger password"
-                value={fields.newPassword}
-                isVisible={passwordVisibility.newPassword}
+                label="Account Password"
+                name="password"
+                placeholder="Enter your portal password"
+                value={fields.password}
+                isVisible={passwordVisibility.password}
                 onChange={updateField}
                 onToggle={togglePasswordVisibility}
               />
+            )}
 
-              <PasswordField
-                label="Confirm password"
-                name="confirmPassword"
-                placeholder="Re-enter your new password"
-                value={fields.confirmPassword}
-                isVisible={passwordVisibility.confirmPassword}
-                onChange={updateField}
-                onToggle={togglePasswordVisibility}
-              />
-            </>
-          ) : null}
+            {mode === "login" && (
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[11px] text-academic-text-muted">Forgot your credentials?</span>
+                <button
+                  type="button"
+                  onClick={() => goToMode("reset")}
+                  className="text-[11px] font-semibold text-academic-accent hover:underline"
+                >
+                  Reset password
+                </button>
+              </div>
+            )}
 
-          {status ? <p className="form-message success">{status}</p> : null}
-          {error ? <p className="form-message error">{error}</p> : null}
+            {showNewPassword && (
+              <>
+                <PasswordField
+                  label="New Password"
+                  name="newPassword"
+                  placeholder="Create a strong password (min 8 chars)"
+                  value={fields.newPassword}
+                  isVisible={passwordVisibility.newPassword}
+                  onChange={updateField}
+                  onToggle={togglePasswordVisibility}
+                />
 
-          <button className="primary-button auth-submit" type="submit" disabled={isLoading}>
-            {isLoading ? "Please wait..." : submitLabel}
-          </button>
+                <PasswordField
+                  label="Confirm New Password"
+                  name="confirmPassword"
+                  placeholder="Re-enter your new password"
+                  value={fields.confirmPassword}
+                  isVisible={passwordVisibility.confirmPassword}
+                  onChange={updateField}
+                  onToggle={togglePasswordVisibility}
+                />
+              </>
+            )}
 
-          {mode === "reset" && !resetToken ? (
-            <p className="auth-switch">
-              Remembered it?{" "}
-              <button type="button" onClick={() => goToMode("login")}>
-                Back to login
-              </button>
-            </p>
-          ) : null}
-        </form>
+            {status && (
+              <div className="p-3 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
+                {status}
+              </div>
+            )}
+
+            {error && (
+              <div className="p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-2.5 px-4 rounded-md bg-academic-navy hover:bg-academic-navy-light text-white text-xs font-semibold shadow-soft transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              <LogIn className="w-3.5 h-3.5 text-academic-gold-light" />
+              <span>{isLoading ? "Authenticating..." : submitLabel}</span>
+            </button>
+
+            {mode === "reset" && !resetToken && (
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => goToMode("login")}
+                  className="text-xs font-semibold text-academic-accent hover:underline inline-flex items-center gap-1"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Return to Portal Login</span>
+                </button>
+              </div>
+            )}
+          </form>
+        </div>
+
+        {/* Institutional Security Notice */}
+        <div className="text-center text-[11px] text-academic-text-muted space-y-1">
+          <p className="flex items-center justify-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-academic-gold-dark" />
+            <span>Official VTU / AIET Department System</span>
+          </p>
+          <p>Unauthorized access is strictly prohibited and logged under institutional IT policies.</p>
+        </div>
+
       </div>
-    </section>
+    </div>
   );
 }
 
 export default Auth;
+

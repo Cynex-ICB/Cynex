@@ -1,13 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import './index.css';
 import './App.css';
+import './index.css';
 import App from './App.jsx';
 
-if (window.location.pathname === '/login') {
-  window.history.replaceState({}, '', '/');
-}
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

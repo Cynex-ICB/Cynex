@@ -1,6 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import {
+  Menu,
+  X,
+  BookOpen,
+  ShieldCheck,
+  GraduationCap,
+  UserCheck,
+  Users,
+  BarChart3,
+  Bell,
+  Sparkles,
+  FileSpreadsheet,
+  ArrowLeft,
+  LogOut,
+  ExternalLink,
+  Trash2,
+  AlertTriangle,
+} from "lucide-react";
 import { API_BASE_URL, downloadApiFile, readApiJson } from "../utils/api.js";
 
 const initialMaterialForm = {
@@ -153,79 +170,138 @@ function AdminDashboard({ user, token, onLogout }) {
           id="admin-sidebar"
         >
           <div className="admin-sidebar-brand">
-            <p className="eyebrow">{dashboardEyebrow}</p>
-            <h2>{dashboardTitle}</h2>
-            <span>{user?.name}</span>
+            <Link
+              to="/"
+              onClick={closeAdminSidebar}
+              className="flex items-center gap-2.5 text-white hover:opacity-90 transition-opacity"
+              title="Return to Cynex Homepage"
+            >
+              <span className="text-2xl font-extrabold tracking-tight text-white">
+                Cynex
+              </span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-academic-accent text-white shadow-sm">
+                Admin
+              </span>
+            </Link>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-700/60">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-academic-gold-light font-mono block">
+                {dashboardEyebrow}
+              </span>
+              <h2 className="text-sm font-bold text-white leading-snug mt-0.5">
+                {dashboardTitle}
+              </h2>
+              <div className="flex items-center gap-1.5 mt-1.5 text-xs text-slate-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"></span>
+                <span className="truncate font-medium">{user?.name}</span>
+              </div>
+            </div>
           </div>
 
           <nav className="admin-dashboard-nav" aria-label="Admin dashboard">
             {isMasterAdmin ? (
               <>
                 <NavLink to="/admin/subjects" onClick={closeAdminSidebar}>
-                  Subject Declaration
+                  <BookOpen className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>Subject Declaration</span>
                 </NavLink>
                 <NavLink to="/admin/admins" onClick={closeAdminSidebar}>
-                  Teacher Admins
+                  <ShieldCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>Teacher Admins</span>
                 </NavLink>
                 <NavLink to="/admin/student-accounts" onClick={closeAdminSidebar}>
-                  Student Accounts
+                  <GraduationCap className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>Student Accounts</span>
                 </NavLink>
                 <NavLink to="/admin/coordinators" onClick={closeAdminSidebar}>
-                  Class Coordinators
+                  <UserCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>Class Coordinators</span>
                 </NavLink>
                 <NavLink to="/admin/mentors" onClick={closeAdminSidebar}>
-                  Mentor Assignment
+                  <Users className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>Mentor Assignment</span>
                 </NavLink>
                 <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
-                  CIE Marks Overview
+                  <BarChart3 className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>CIE Marks Overview</span>
                 </NavLink>
               </>
             ) : (
               <>
                 <NavLink to="/admin/academic" onClick={closeAdminSidebar}>
-                  Academic Content
+                  <BookOpen className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>Academic Content</span>
                 </NavLink>
                 <NavLink to="/admin/activity-alerts" onClick={closeAdminSidebar}>
-                  Activity Alerts
+                  <Bell className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>Activity Alerts</span>
                 </NavLink>
                 <NavLink to="/admin/showcase" onClick={closeAdminSidebar}>
-                  Showcase Pages
+                  <Sparkles className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>Showcase Pages</span>
                 </NavLink>
                 <NavLink to="/admin/cie-marks" onClick={closeAdminSidebar}>
-                  CIE Marks
+                  <FileSpreadsheet className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>CIE Marks</span>
                 </NavLink>
                 <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
-                  CIE Marks Overview
+                  <BarChart3 className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                  <span>CIE Marks Overview</span>
                 </NavLink>
               </>
             )}
           </nav>
 
           <div className="admin-sidebar-actions">
-          <Link className="nav-logout admin-back-link" to="/" onClick={closeAdminSidebar}>
-            Back to Website
-          </Link>
-          <button
-            className="nav-logout admin-logout"
-            type="button"
-            onClick={() => {
-              closeAdminSidebar();
-              onLogout?.();
-            }}
-          >
-            Logout
-          </button>
+            <Link className="nav-logout admin-back-link" to="/" onClick={closeAdminSidebar}>
+              <ArrowLeft className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span>Back to Website</span>
+            </Link>
+            <button
+              className="nav-logout admin-logout"
+              type="button"
+              onClick={() => {
+                closeAdminSidebar();
+                onLogout?.();
+              }}
+            >
+              <LogOut className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span>Logout</span>
+            </button>
           </div>
         </aside>
 
         <div className="admin-content">
           <header className="admin-header">
             <div>
-              <p className="eyebrow">{dashboardEyebrow}</p>
-              <h1>{dashboardTitle}</h1>
-              <span>
-                {user?.name} - {user?.collegeEmail || user?.email}
-              </span>
+              <p className="text-academic-gold-light text-xs font-mono font-semibold uppercase tracking-wider mb-0.5">
+                {dashboardEyebrow}
+              </p>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                {dashboardTitle}
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-academic-navy-light/90 border border-slate-700 text-left">
+                <div className="w-8 h-8 rounded-full bg-academic-accent text-white flex items-center justify-center text-xs font-bold font-mono shadow-sm">
+                  {user?.name?.charAt(0)?.toUpperCase() || "A"}
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white leading-none max-w-[140px] truncate">
+                    {user?.name}
+                  </p>
+                  <span className="text-[10px] text-slate-400 font-mono leading-none truncate block mt-0.5 max-w-[140px]">
+                    {user?.collegeEmail || user?.email}
+                  </span>
+                </div>
+              </div>
+              <Link
+                to="/"
+                className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors"
+                title="View Website"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>View Site</span>
+              </Link>
             </div>
           </header>
 
@@ -234,8 +310,8 @@ function AdminDashboard({ user, token, onLogout }) {
             {isMasterAdmin ? (
               <>
                 <Route path="subjects" element={<SubjectsPage token={token} />} />
-                <Route path="admins" element={<TeacherAdminsPage token={token} />} />
-                <Route path="student-accounts" element={<StudentAccountsPage token={token} />} />
+                <Route path="admins" element={<TeacherAdminsPage token={token} currentUser={user} />} />
+                <Route path="student-accounts" element={<StudentAccountsPage token={token} currentUser={user} />} />
                 <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />
                 <Route path="mentors" element={<MentorAssignmentsPage token={token} />} />
                 <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
@@ -690,7 +766,7 @@ function MasterCieOverviewPage({ token }) {
 
       <div className="card cie-overview-table-card">
         {!hasSelectedFilters ? (
-          <div className="cie-overview-empty">slelect snenster and subject</div>
+          <div className="cie-overview-empty">Select semester and subject</div>
         ) : (
           <div className="cie-sheet-table-wrap">
             <table className="cie-sheet-table cie-overview-table">
@@ -1693,12 +1769,69 @@ function CoordinatorAssignmentsPage({ token }) {
   );
 }
 
-function TeacherAdminsPage({ token }) {
+function ConfirmDeleteModal({ isOpen, title, message, itemName, isDeleting, onConfirm, onCancel }) {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full p-6 space-y-4 text-left">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900 leading-tight">
+              {title || "Confirm Deletion"}
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">Permanent account removal</p>
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-lg bg-red-50/70 border border-red-100 text-slate-700 text-xs leading-relaxed space-y-2">
+          <p>{message || "Are you sure you want to permanently delete this user account? This action cannot be undone."}</p>
+          {itemName && (
+            <p className="font-mono font-bold text-red-900 bg-white p-2 rounded border border-red-200 truncate">
+              {itemName}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold text-xs transition-colors"
+            onClick={onCancel}
+            disabled={isDeleting}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm transition-colors disabled:opacity-50"
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>{isDeleting ? "Deleting..." : "Permanently Delete"}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TeacherAdminsPage({ token, currentUser }) {
   const [form, setForm] = useState(initialTeacherAdminForm);
   const [admins, setAdmins] = useState([]);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const authHeaders = getAuthHeaders(token);
 
   useEffect(() => {
@@ -1768,8 +1901,42 @@ function TeacherAdminsPage({ token }) {
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    setStatus("");
+    setError("");
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/admins/${deleteTarget.id}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        })
+      );
+
+      setAdmins((currentAdmins) => currentAdmins.filter((item) => item.id !== deleteTarget.id));
+      setStatus(data.message || "Admin account deleted successfully.");
+      setDeleteTarget(null);
+    } catch (delError) {
+      setError(delError.message || "Could not delete admin account.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <section className="admin-grid admin-route-panel">
+      <ConfirmDeleteModal
+        isOpen={Boolean(deleteTarget)}
+        title={`Delete ${deleteTarget?.role === "master-admin" ? "Master Admin" : "Teacher Admin"}`}
+        message={`Are you sure you want to permanently delete this account? All associated administrative rights and portal access will be revoked immediately.`}
+        itemName={`${deleteTarget?.name} (${deleteTarget?.collegeEmail || "No Email"} • ${deleteTarget?.role === "master-admin" ? "Master Admin" : "Teacher Admin"})`}
+        isDeleting={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
       <form className="card admin-form" onSubmit={handleSubmit}>
         <div>
           <p className="eyebrow">Teacher Admins</p>
@@ -1800,7 +1967,7 @@ function TeacherAdminsPage({ token }) {
             type="email"
             value={form.collegeEmail}
             onChange={updateField}
-            placeholder="teacher@example.com"
+            placeholder="teacher@aiet.org.in"
             required
           />
         </label>
@@ -1812,14 +1979,14 @@ function TeacherAdminsPage({ token }) {
             type="text"
             value={form.teacherId}
             onChange={updateField}
-            placeholder="Employee ID"
+            placeholder="TCH101"
             required
           />
         </label>
 
         <label>
-          Role
-          <select name="role" value={form.role} onChange={updateField} required>
+          Portal Role
+          <select name="role" value={form.role} onChange={updateField}>
             <option value="admin">Teacher Admin</option>
             <option value="master-admin">Master Admin</option>
           </select>
@@ -1849,32 +2016,60 @@ function TeacherAdminsPage({ token }) {
       <div className="admin-posts">
         <div className="admin-section-heading">
           <p className="eyebrow">Admin Accounts</p>
-          <h2>Teachers with portal access</h2>
+          <h2>Teachers &amp; master admins with portal access</h2>
         </div>
 
         <div className="student-list">
           {admins.length ? (
-            admins.map((admin) => (
-              <article className="card student-card" key={admin.id}>
-                <div className="student-card-top">
-                  <span>{admin.role === "master-admin" ? "Master Admin" : "Teacher Admin"}</span>
-                  {admin.teacherId ? <small>ID: {admin.teacherId}</small> : null}
-                </div>
-                <h3>{admin.name}</h3>
-                <small>{admin.collegeEmail}</small>
-                {admin.teacherId ? <small>Teacher Employee ID: {admin.teacherId}</small> : null}
-                <p>Class Coordinator For: {formatSemesterList(admin.coordinatorSemesters)}</p>
-                {(admin.mentorAssignments || []).length ? (
-                  admin.mentorAssignments.map((assignment, index) => (
-                    <p key={`${assignment.startUsn}-${assignment.endUsn}-${index}`}>
-                      Mentor Range: {assignment.startUsn} to {assignment.endUsn}
-                    </p>
-                  ))
-                ) : (
-                  <p>Mentor Range: Not assigned</p>
-                )}
-              </article>
-            ))
+            admins.map((admin) => {
+              const isCurrentSession = currentUser?.id === admin.id;
+              const isMaster = admin.role === "master-admin";
+
+              return (
+                <article className="card student-card" key={admin.id}>
+                  <div className="student-card-top">
+                    <span className={isMaster ? "font-bold text-amber-500" : ""}>
+                      {isMaster ? "Master Admin" : "Teacher Admin"}
+                    </span>
+                    {admin.teacherId ? <small>ID: {admin.teacherId}</small> : null}
+                  </div>
+                  <h3>{admin.name}</h3>
+                  <small>{admin.collegeEmail}</small>
+                  {admin.teacherId ? <small>Teacher Employee ID: {admin.teacherId}</small> : null}
+                  <p>Class Coordinator For: {formatSemesterList(admin.coordinatorSemesters)}</p>
+                  {(admin.mentorAssignments || []).length ? (
+                    admin.mentorAssignments.map((assignment, index) => (
+                      <p key={`${assignment.startUsn}-${assignment.endUsn}-${index}`}>
+                        Mentor Range: {assignment.startUsn} to {assignment.endUsn}
+                      </p>
+                    ))
+                  ) : (
+                    <p>Mentor Range: Not assigned</p>
+                  )}
+
+                  <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-mono text-slate-400">
+                      {isMaster ? "Master Privilege" : "Faculty Admin"}
+                    </span>
+                    {isCurrentSession ? (
+                      <span className="text-xs text-emerald-600 font-semibold italic bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+                        Active Session (You)
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold border border-red-200 transition-colors"
+                        onClick={() => setDeleteTarget(admin)}
+                        title={`Delete ${admin.name}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete {isMaster ? "Master Admin" : "Admin"}</span>
+                      </button>
+                    )}
+                  </div>
+                </article>
+              );
+            })
           ) : (
             <div className="card empty-state">
               <h3>No teacher admins yet</h3>
@@ -1887,7 +2082,7 @@ function TeacherAdminsPage({ token }) {
   );
 }
 
-function StudentAccountsPage({ token }) {
+function StudentAccountsPage({ token, currentUser }) {
   const [form, setForm] = useState(initialStudentAccountForm);
   const [bulkForm, setBulkForm] = useState(initialStudentBulkForm);
   const [bulkFile, setBulkFile] = useState(null);
@@ -1899,12 +2094,38 @@ function StudentAccountsPage({ token }) {
   const [selectedStudentSemester, setSelectedStudentSemester] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const bulkFileInputRef = useRef(null);
   const authHeaders = getAuthHeaders(token);
 
   useEffect(() => {
     loadStudents();
   }, [token]);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    setManualStatus("");
+    setManualError("");
+
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/users/students/${deleteTarget.id}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        })
+      );
+
+      setStudents((current) => current.filter((s) => s.id !== deleteTarget.id));
+      setManualStatus(data.message || "Student account deleted successfully.");
+      setDeleteTarget(null);
+    } catch (delError) {
+      setManualError(delError.message || "Could not delete student account.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const loadStudents = async () => {
     try {
@@ -2000,6 +2221,16 @@ function StudentAccountsPage({ token }) {
 
   return (
     <section className="admin-grid admin-route-panel">
+      <ConfirmDeleteModal
+        isOpen={Boolean(deleteTarget)}
+        title="Delete Student Account"
+        message="Are you sure you want to permanently delete this student account? Their academic record, proctoring links, and all recorded CIE marks will be permanently removed."
+        itemName={`${deleteTarget?.name} (USN: ${deleteTarget?.usn || "N/A"} • ${deleteTarget?.collegeEmail || ""})`}
+        isDeleting={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
       <div className="student-account-forms">
         <form className="card admin-form" onSubmit={handleSubmit}>
           <div>
@@ -2176,6 +2407,20 @@ function StudentAccountsPage({ token }) {
                 <small>{student.collegeEmail}</small>
                 <p>Class Coordinator: {student.classCoordinatorName || "Not assigned"}</p>
                 <p>Mentor: {student.mentorName || "Not assigned"}</p>
+                <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-mono text-slate-400">
+                    USN: {student.usn || "N/A"}
+                  </span>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold border border-red-200 transition-colors"
+                    onClick={() => setDeleteTarget(student)}
+                    title={`Delete student ${student.name}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Student</span>
+                  </button>
+                </div>
               </article>
             ))
           ) : (
