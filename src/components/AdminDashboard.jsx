@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
+import { Link, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import {
   Menu,
   X,
@@ -17,6 +17,9 @@ import {
   ExternalLink,
   Trash2,
   AlertTriangle,
+  Plus,
+  Layers,
+  FolderPlus,
 } from "lucide-react";
 import { API_BASE_URL, downloadApiFile, readApiJson } from "../utils/api.js";
 
@@ -134,27 +137,94 @@ async function readJson(response) {
   return readApiJson(response);
 }
 
+function getRouteMetadata(pathname, isMasterAdmin) {
+  if (pathname.includes("/admin/subjects")) {
+    return {
+      title: "Subject Declaration",
+      eyebrow: "Curriculum Management",
+      description: "Declare and manage course curricula, credit ratings, and assigned faculty.",
+    };
+  }
+  if (pathname.includes("/admin/admins")) {
+    return {
+      title: "Teacher Admins",
+      eyebrow: "Faculty Directory",
+      description: "Manage teacher credentials, administrative privileges, and secure portal access.",
+    };
+  }
+  if (pathname.includes("/admin/student-accounts")) {
+    return {
+      title: "Student Accounts",
+      eyebrow: "Student Roster",
+      description: "Manage student profiles, USN records, and login credentials.",
+    };
+  }
+  if (pathname.includes("/admin/coordinators")) {
+    return {
+      title: "Class Coordinators",
+      eyebrow: "Cohort Governance",
+      description: "Appoint faculty coordinators responsible for each academic semester.",
+    };
+  }
+  if (pathname.includes("/admin/mentors")) {
+    return {
+      title: "Mentor Assignment",
+      eyebrow: "Student Advisory",
+      description: "Assign faculty mentors to guide and counsel student cohorts.",
+    };
+  }
+  if (pathname.includes("/admin/cie-overview")) {
+    return {
+      title: "CIE Marks Overview",
+      eyebrow: "Academic Analytics",
+      description: "Review comprehensive semester-wide Continuous Internal Evaluation scores.",
+    };
+  }
+  if (pathname.includes("/admin/academic")) {
+    return {
+      title: "Academic Content",
+      eyebrow: "Courseware",
+      description: "Publish lecture notes, study materials, syllabi, and assignment briefs.",
+    };
+  }
+  if (pathname.includes("/admin/activity-alerts")) {
+    return {
+      title: "Activity Alerts",
+      eyebrow: "Announcements",
+      description: "Broadcast department events, hackathons, club sessions, and tech alerts.",
+    };
+  }
+  if (pathname.includes("/admin/showcase")) {
+    return {
+      title: "Showcase & Highlights",
+      eyebrow: "Department Wins",
+      description: "Highlight top placement packages, capstone projects, and student accolades.",
+    };
+  }
+  if (pathname.includes("/admin/cie-marks")) {
+    return {
+      title: "CIE Marks Entry",
+      eyebrow: "Continuous Evaluation",
+      description: "Enter, update, and upload CIE test scores for assigned students.",
+    };
+  }
+  return {
+    title: isMasterAdmin ? "Master Admin Panel" : "Admin Panel",
+    eyebrow: isMasterAdmin ? "Department Administration" : "Faculty Portal",
+    description: "Manage department operations, students, and academic curriculum.",
+  };
+}
+
 function AdminDashboard({ user, token, onLogout }) {
   const [isAdminSidebarOpen, setIsAdminSidebarOpen] = useState(false);
   const closeAdminSidebar = () => setIsAdminSidebarOpen(false);
+  const location = useLocation();
   const isMasterAdmin = user?.role === "master-admin";
-  const dashboardTitle = isMasterAdmin ? "Master Admin Panel" : "Admin Panel";
-  const dashboardEyebrow = isMasterAdmin ? "HOD Dashboard" : "Teacher Dashboard";
   const defaultRoute = isMasterAdmin ? "subjects" : "academic";
+  const routeMeta = getRouteMetadata(location.pathname, isMasterAdmin);
 
   return (
     <main className="admin-page">
-      <button
-        className={`admin-sidebar-toggle ${isAdminSidebarOpen ? "is-open" : ""}`}
-        type="button"
-        aria-label={isAdminSidebarOpen ? "Close admin sidebar" : "Open admin sidebar"}
-        aria-controls="admin-sidebar"
-        aria-expanded={isAdminSidebarOpen}
-        onClick={() => setIsAdminSidebarOpen((current) => !current)}
-      >
-        {isAdminSidebarOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-      </button>
-
       <button
         className={`admin-sidebar-backdrop ${isAdminSidebarOpen ? "show" : ""}`}
         type="button"
@@ -169,164 +239,188 @@ function AdminDashboard({ user, token, onLogout }) {
           className={`admin-sidebar ${isAdminSidebarOpen ? "show" : ""}`}
           id="admin-sidebar"
         >
-          <div className="admin-sidebar-brand">
+          <div className="admin-sidebar-header">
             <Link
               to="/"
               onClick={closeAdminSidebar}
-              className="flex items-center gap-2.5 text-white hover:opacity-90 transition-opacity"
+              className="admin-brand-link"
               title="Return to Cynex Homepage"
             >
-              <span className="text-2xl font-extrabold tracking-tight text-white">
+              <span className="text-2xl font-black tracking-tight text-white">
                 Cynex
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-academic-accent text-white shadow-sm">
-                Admin
+              <span className="admin-brand-badge">
+                {isMasterAdmin ? "Master" : "Admin"}
               </span>
             </Link>
-            <div className="mt-2.5 pt-2.5 border-t border-slate-700/60">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-academic-gold-light font-mono block">
-                {dashboardEyebrow}
-              </span>
-              <h2 className="text-sm font-bold text-white leading-snug mt-0.5">
-                {dashboardTitle}
-              </h2>
-              <div className="flex items-center gap-1.5 mt-1.5 text-xs text-slate-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"></span>
-                <span className="truncate font-medium">{user?.name}</span>
-              </div>
-            </div>
           </div>
 
           <nav className="admin-dashboard-nav" aria-label="Admin dashboard">
             {isMasterAdmin ? (
               <>
-                <NavLink to="/admin/subjects" onClick={closeAdminSidebar}>
-                  <BookOpen className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>Subject Declaration</span>
-                </NavLink>
-                <NavLink to="/admin/admins" onClick={closeAdminSidebar}>
-                  <ShieldCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>Teacher Admins</span>
-                </NavLink>
-                <NavLink to="/admin/student-accounts" onClick={closeAdminSidebar}>
-                  <GraduationCap className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>Student Accounts</span>
-                </NavLink>
-                <NavLink to="/admin/coordinators" onClick={closeAdminSidebar}>
-                  <UserCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>Class Coordinators</span>
-                </NavLink>
-                <NavLink to="/admin/mentors" onClick={closeAdminSidebar}>
-                  <Users className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>Mentor Assignment</span>
-                </NavLink>
-                <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
-                  <BarChart3 className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>CIE Marks Overview</span>
-                </NavLink>
+                <div className="admin-nav-group">
+                  <span className="admin-nav-group-title">Curriculum</span>
+                  <NavLink to="/admin/subjects" onClick={closeAdminSidebar}>
+                    <BookOpen className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Subject Declaration</span>
+                  </NavLink>
+                  <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
+                    <BarChart3 className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>CIE Marks Overview</span>
+                  </NavLink>
+                </div>
+
+                <div className="admin-nav-group">
+                  <span className="admin-nav-group-title">Directory</span>
+                  <NavLink to="/admin/admins" onClick={closeAdminSidebar}>
+                    <ShieldCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Teacher Admins</span>
+                  </NavLink>
+                  <NavLink to="/admin/student-accounts" onClick={closeAdminSidebar}>
+                    <GraduationCap className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Student Accounts</span>
+                  </NavLink>
+                </div>
+
+                <div className="admin-nav-group">
+                  <span className="admin-nav-group-title">Advisory</span>
+                  <NavLink to="/admin/coordinators" onClick={closeAdminSidebar}>
+                    <UserCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Class Coordinators</span>
+                  </NavLink>
+                  <NavLink to="/admin/mentors" onClick={closeAdminSidebar}>
+                    <Users className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Mentor Assignment</span>
+                  </NavLink>
+                </div>
               </>
             ) : (
               <>
-                <NavLink to="/admin/academic" onClick={closeAdminSidebar}>
-                  <BookOpen className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>Academic Content</span>
-                </NavLink>
-                <NavLink to="/admin/activity-alerts" onClick={closeAdminSidebar}>
-                  <Bell className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>Activity Alerts</span>
-                </NavLink>
-                <NavLink to="/admin/showcase" onClick={closeAdminSidebar}>
-                  <Sparkles className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>Showcase Pages</span>
-                </NavLink>
-                <NavLink to="/admin/cie-marks" onClick={closeAdminSidebar}>
-                  <FileSpreadsheet className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>CIE Marks</span>
-                </NavLink>
-                <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
-                  <BarChart3 className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
-                  <span>CIE Marks Overview</span>
-                </NavLink>
+                <div className="admin-nav-group">
+                  <span className="admin-nav-group-title">Content</span>
+                  <NavLink to="/admin/academic" onClick={closeAdminSidebar}>
+                    <BookOpen className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Academic Content</span>
+                  </NavLink>
+                  <NavLink to="/admin/activity-alerts" onClick={closeAdminSidebar}>
+                    <Bell className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Activity Alerts</span>
+                  </NavLink>
+                  <NavLink to="/admin/showcase" onClick={closeAdminSidebar}>
+                    <Sparkles className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Showcase Pages</span>
+                  </NavLink>
+                </div>
+
+                <div className="admin-nav-group">
+                  <span className="admin-nav-group-title">Evaluation</span>
+                  <NavLink to="/admin/cie-marks" onClick={closeAdminSidebar}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>CIE Marks</span>
+                  </NavLink>
+                  <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
+                    <BarChart3 className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>CIE Marks Overview</span>
+                  </NavLink>
+                </div>
               </>
             )}
           </nav>
 
-          <div className="admin-sidebar-actions">
-            <Link className="nav-logout admin-back-link" to="/" onClick={closeAdminSidebar}>
-              <ArrowLeft className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span>Back to Website</span>
-            </Link>
-            <button
-              className="nav-logout admin-logout"
-              type="button"
-              onClick={() => {
-                closeAdminSidebar();
-                onLogout?.();
-              }}
-            >
-              <LogOut className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span>Logout</span>
-            </button>
+          <div className="admin-sidebar-footer">
+            <div className="admin-user-pill">
+              <div className="admin-user-avatar">
+                {user?.name?.charAt(0)?.toUpperCase() || "A"}
+              </div>
+              <div className="admin-user-info">
+                <span className="admin-user-name truncate">{user?.name}</span>
+                <span className="admin-user-email truncate">{user?.collegeEmail || user?.email}</span>
+              </div>
+            </div>
+
+            <div className="admin-sidebar-action-row">
+              <Link className="admin-footer-btn" to="/" onClick={closeAdminSidebar} title="View Live Website">
+                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                <span>Live Site</span>
+              </Link>
+              <button
+                className="admin-footer-btn admin-logout-btn"
+                type="button"
+                onClick={() => {
+                  closeAdminSidebar();
+                  onLogout?.();
+                }}
+                title="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5 mr-1.5" />
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </aside>
 
         <div className="admin-content">
-          <header className="admin-header">
-            <div>
-              <p className="text-academic-gold-light text-xs font-mono font-semibold uppercase tracking-wider mb-0.5">
-                {dashboardEyebrow}
-              </p>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-                {dashboardTitle}
-              </h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-academic-navy-light/90 border border-slate-700 text-left">
-                <div className="w-8 h-8 rounded-full bg-academic-accent text-white flex items-center justify-center text-xs font-bold font-mono shadow-sm">
-                  {user?.name?.charAt(0)?.toUpperCase() || "A"}
+          <header className="admin-topbar">
+            <div className="admin-topbar-left">
+              <button
+                className="admin-mobile-toggle"
+                type="button"
+                aria-label="Toggle navigation menu"
+                onClick={() => setIsAdminSidebarOpen((prev) => !prev)}
+              >
+                <Menu className="w-5 h-5 text-slate-700" />
+              </button>
+              <div className="admin-topbar-heading">
+                <div className="admin-breadcrumb">
+                  <span className="text-slate-400 font-medium">Dashboard</span>
+                  <span className="text-slate-300">/</span>
+                  <span className="text-slate-700 font-semibold">{routeMeta.eyebrow}</span>
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-white leading-none max-w-[140px] truncate">
-                    {user?.name}
-                  </p>
-                  <span className="text-[10px] text-slate-400 font-mono leading-none truncate block mt-0.5 max-w-[140px]">
-                    {user?.collegeEmail || user?.email}
-                  </span>
-                </div>
+                <h1 className="admin-page-title">{routeMeta.title}</h1>
+                <p className="admin-page-desc">{routeMeta.description}</p>
               </div>
+            </div>
+
+            <div className="admin-topbar-right">
               <Link
                 to="/"
-                className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors"
-                title="View Website"
+                className="admin-live-site-btn"
+                title="View Public Website"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                <span>View Site</span>
+                <span>Live Website</span>
               </Link>
+              <div className="admin-role-pill">
+                <span className="status-indicator"></span>
+                <span>{isMasterAdmin ? "Master Admin" : "Teacher Admin"}</span>
+              </div>
             </div>
           </header>
 
-          <Routes>
-            <Route index element={<Navigate to={defaultRoute} replace />} />
-            {isMasterAdmin ? (
-              <>
-                <Route path="subjects" element={<SubjectsPage token={token} />} />
-                <Route path="admins" element={<TeacherAdminsPage token={token} currentUser={user} />} />
-                <Route path="student-accounts" element={<StudentAccountsPage token={token} currentUser={user} />} />
-                <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />
-                <Route path="mentors" element={<MentorAssignmentsPage token={token} />} />
-                <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
-              </>
-            ) : (
-              <>
-                <Route path="academic" element={<AcademicContentPage token={token} />} />
-                <Route path="activity-alerts" element={<ActivityAlertsPage token={token} />} />
-                <Route path="showcase" element={<ShowcaseContentPage token={token} />} />
-                <Route path="cie-marks" element={<CieMarksPage token={token} />} />
-                <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
-              </>
-            )}
-            <Route path="*" element={<Navigate to={defaultRoute} replace />} />
-          </Routes>
+          <div className="admin-body-container">
+            <Routes>
+              <Route index element={<Navigate to={defaultRoute} replace />} />
+              {isMasterAdmin ? (
+                <>
+                  <Route path="subjects" element={<SubjectsPage token={token} />} />
+                  <Route path="admins" element={<TeacherAdminsPage token={token} currentUser={user} />} />
+                  <Route path="student-accounts" element={<StudentAccountsPage token={token} currentUser={user} />} />
+                  <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />
+                  <Route path="mentors" element={<MentorAssignmentsPage token={token} />} />
+                  <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
+                </>
+              ) : (
+                <>
+                  <Route path="academic" element={<AcademicContentPage token={token} />} />
+                  <Route path="activity-alerts" element={<ActivityAlertsPage token={token} />} />
+                  <Route path="showcase" element={<ShowcaseContentPage token={token} />} />
+                  <Route path="cie-marks" element={<CieMarksPage token={token} />} />
+                  <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
+                </>
+              )}
+              <Route path="*" element={<Navigate to={defaultRoute} replace />} />
+            </Routes>
+          </div>
         </div>
       </div>
     </main>
@@ -1340,6 +1434,8 @@ function SubjectsPage({ token }) {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const authHeaders = getAuthHeaders(token);
 
   useEffect(() => {
@@ -1384,7 +1480,7 @@ function SubjectsPage({ token }) {
 
       setSubjects((currentSubjects) => [data.subject, ...currentSubjects]);
       setSubjectForm(initialSubjectForm);
-      setStatus("Subject created.");
+      setStatus("Subject registered successfully.");
     } catch (submitError) {
       setError(submitError.message);
     } finally {
@@ -1392,21 +1488,28 @@ function SubjectsPage({ token }) {
     }
   };
 
-  const deleteSubject = async (subjectId) => {
+  const confirmDeleteSubject = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
     setStatus("");
     setError("");
 
     try {
       await readJson(
-        await fetch(`${API_BASE_URL}/subjects/${subjectId}`, {
+        await fetch(`${API_BASE_URL}/subjects/${deleteTarget._id}`, {
           method: "DELETE",
           headers: authHeaders,
         })
       );
-      setSubjects((currentSubjects) => currentSubjects.filter((subject) => subject._id !== subjectId));
-      setStatus("Subject deleted.");
+      setSubjects((currentSubjects) =>
+        currentSubjects.filter((subject) => subject._id !== deleteTarget._id)
+      );
+      setStatus(`Course "${deleteTarget.code}" deleted successfully.`);
+      setDeleteTarget(null);
     } catch (deleteError) {
       setError(deleteError.message);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -1416,133 +1519,189 @@ function SubjectsPage({ token }) {
 
   return (
     <section className="admin-grid admin-route-panel">
-      <form className="card admin-form" onSubmit={handleSubjectSubmit}>
-        <div>
-          <p className="eyebrow">Subjects</p>
-          <h2>Set subjects for every semester</h2>
+      <form className="card admin-form modern-form-card" onSubmit={handleSubjectSubmit}>
+        <div className="form-card-header">
+          <div className="form-header-icon">
+            <BookOpen className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-slate-900">New Subject</h2>
+            <p className="text-xs text-slate-500">Define course code, credits & syllabus</p>
+          </div>
+        </div>
+
+        <div className="form-row-2">
+          <label>
+            <span>Subject Code</span>
+            <input
+              name="code"
+              type="text"
+              value={subjectForm.code}
+              onChange={updateSubjectField}
+              placeholder="e.g. 21CS32"
+              required
+            />
+          </label>
+
+          <label>
+            <span>Credits</span>
+            <input
+              name="credits"
+              type="number"
+              min="1"
+              max="6"
+              value={subjectForm.credits}
+              onChange={updateSubjectField}
+              required
+            />
+          </label>
         </div>
 
         <label>
-          Subject Code
-          <input
-            name="code"
-            type="text"
-            value={subjectForm.code}
-            onChange={updateSubjectField}
-            placeholder="CS101"
-            required
-          />
-        </label>
-
-        <label>
-          Subject Name
+          <span>Subject Name</span>
           <input
             name="name"
             type="text"
             value={subjectForm.name}
             onChange={updateSubjectField}
-            placeholder="Data Structures"
+            placeholder="e.g. Data Structures & Applications"
             required
           />
         </label>
 
-        <label>
-          Semester
-          <select name="semester" value={subjectForm.semester} onChange={updateSubjectField}>
-            {semesterOptions.map((semester) => (
-              <option key={semester} value={semester}>
-                Semester {semester}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="form-row-2">
+          <label>
+            <span>Semester</span>
+            <select name="semester" value={subjectForm.semester} onChange={updateSubjectField}>
+              {semesterOptions.map((semester) => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            <span>Faculty / Instructor</span>
+            <input
+              name="instructor"
+              type="text"
+              value={subjectForm.instructor}
+              onChange={updateSubjectField}
+              placeholder="e.g. Dr. Ramesh Kumar"
+            />
+          </label>
+        </div>
 
         <label>
-          Credits
-          <input
-            name="credits"
-            type="number"
-            min="1"
-            max="6"
-            value={subjectForm.credits}
-            onChange={updateSubjectField}
-            required
-          />
-        </label>
-
-        <label>
-          Instructor
-          <input
-            name="instructor"
-            type="text"
-            value={subjectForm.instructor}
-            onChange={updateSubjectField}
-            placeholder="Faculty name"
-          />
-        </label>
-
-        <label>
-          Description
+          <span>Course Description</span>
           <textarea
             name="description"
             value={subjectForm.description}
             onChange={updateSubjectField}
-            placeholder="Subject description"
-            rows="4"
+            placeholder="Key syllabus objectives, laboratory modules, and references..."
+            rows="3"
           />
         </label>
 
         {status ? <p className="form-message success">{status}</p> : null}
         {error ? <p className="form-message error">{error}</p> : null}
 
-        <button className="primary-button admin-submit" type="submit" disabled={isLoading}>
-          {isLoading ? "Creating..." : "Create Subject"}
+        <button className="primary-button admin-submit flex items-center justify-center gap-2" type="submit" disabled={isLoading}>
+          <Plus className="w-4 h-4" />
+          <span>{isLoading ? "Registering..." : "Add Subject"}</span>
         </button>
       </form>
 
       <div className="admin-posts">
-        <div className="admin-section-heading">
-          <p className="eyebrow">Configured Subjects</p>
-          <h2>All subjects by semester</h2>
-        </div>
+        <div className="admin-section-header-card">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Configured Subjects</h2>
+              <p className="text-xs text-slate-500">Curriculum catalog by semester</p>
+            </div>
+            <span className="count-pill">
+              {filteredSubjects.length} {filteredSubjects.length === 1 ? "course" : "courses"}
+            </span>
+          </div>
 
-        <label className="semester-filter">
-          Filter by Semester
-          <select value={selectedSemesterFilter} onChange={(event) => setSelectedSemesterFilter(event.target.value)}>
-            {semesterOptions.map((semester) => (
-              <option key={semester} value={semester}>
-                Semester {semester}
-              </option>
-            ))}
-          </select>
-        </label>
+          <div className="semester-tabs-wrapper">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+              Filter by Semester:
+            </span>
+            <div className="semester-tabs">
+              {semesterOptions.map((sem) => {
+                const isActive = String(sem) === String(selectedSemesterFilter);
+                return (
+                  <button
+                    key={sem}
+                    type="button"
+                    className={`semester-tab ${isActive ? "active" : ""}`}
+                    onClick={() => setSelectedSemesterFilter(String(sem))}
+                  >
+                    Sem {sem}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
 
         <div className="subject-list">
           {filteredSubjects.length ? (
             filteredSubjects.map((subject) => (
-              <article className="card subject-card" key={subject._id}>
-                <div className="subject-card-top">
-                  <span className="subject-code">{subject.code}</span>
-                  <button type="button" onClick={() => deleteSubject(subject._id)}>
-                    Delete
+              <article className="card modern-subject-card" key={subject._id}>
+                <div className="modern-subject-card-header">
+                  <div className="flex items-center gap-2">
+                    <span className="modern-subject-code">{subject.code}</span>
+                    <span className="modern-subject-credits">{subject.credits} Credits</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="modern-subject-delete-btn"
+                    title="Delete Course"
+                    onClick={() => setDeleteTarget(subject)}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <h3>{subject.name}</h3>
-                <p>{subject.description}</p>
-                <div className="subject-meta">
-                  <small>Credits: {subject.credits}</small>
-                  {subject.instructor ? <small>Instructor: {subject.instructor}</small> : null}
+                <h3 className="modern-subject-title">{subject.name}</h3>
+                {subject.description ? (
+                  <p className="modern-subject-desc">{subject.description}</p>
+                ) : null}
+                <div className="modern-subject-footer">
+                  <span className="modern-subject-faculty">
+                    <Users className="w-3.5 h-3.5 opacity-60 mr-1.5" />
+                    {subject.instructor ? subject.instructor : "Faculty unassigned"}
+                  </span>
                 </div>
               </article>
             ))
           ) : (
-            <div className="card empty-state">
-              <h3>No subjects for this semester</h3>
-              <p>Add subjects for this semester using the form.</p>
+            <div className="card modern-empty-state">
+              <div className="modern-empty-icon">
+                <BookOpen className="w-8 h-8 text-slate-300" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-700 mt-2">
+                No subjects in Semester {selectedSemesterFilter}
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                Use the form on the left to declare courses, assign credits, and attach instructors for this semester.
+              </p>
             </div>
           )}
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(deleteTarget)}
+        title="Delete Subject"
+        message="Are you sure you want to permanently remove this course from the curriculum? Student marks associated with this subject may be impacted."
+        itemName={deleteTarget ? `${deleteTarget.code} - ${deleteTarget.name}` : ""}
+        isDeleting={isDeleting}
+        onConfirm={confirmDeleteSubject}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </section>
   );
 }
