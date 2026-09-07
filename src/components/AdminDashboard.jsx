@@ -67,13 +67,11 @@ const initialCieForm = {
 
 const initialCoordinatorForm = {
   teacherUserId: "",
-  teacherId: "",
   semester: "3",
 };
 
 const initialMentorForm = {
   teacherUserId: "",
-  teacherId: "",
   startUsn: "",
   endUsn: "",
 };
@@ -81,7 +79,6 @@ const initialMentorForm = {
 const initialTeacherAdminForm = {
   name: "",
   collegeEmail: "",
-  teacherId: "",
   role: "admin",
   password: "",
 };
@@ -1749,12 +1746,10 @@ function CoordinatorAssignmentsPage({ token }) {
     setForm((currentForm) => ({ ...currentForm, [name]: value }));
   };
 
-  const selectTeacher = (teacherId) => {
-    const teacher = teachers.find((currentTeacher) => currentTeacher.id === teacherId);
+  const selectTeacher = (teacherUserId) => {
     setForm((currentForm) => ({
       ...currentForm,
-      teacherUserId: teacherId,
-      teacherId: teacher?.teacherId || currentForm.teacherId,
+      teacherUserId,
     }));
   };
 
@@ -1849,22 +1844,10 @@ function CoordinatorAssignmentsPage({ token }) {
             <option value="">Choose teacher</option>
             {teachers.map((teacher) => (
               <option key={teacher.id} value={teacher.id}>
-                {teacher.name} {teacher.teacherId ? `(${teacher.teacherId})` : ""}
+                {teacher.name}
               </option>
             ))}
           </select>
-        </label>
-
-        <label>
-          Teacher ID
-          <input
-            name="teacherId"
-            type="text"
-            value={form.teacherId}
-            onChange={updateField}
-            placeholder="Teacher ID"
-            required
-          />
         </label>
 
         <label>
@@ -1910,7 +1893,6 @@ function CoordinatorAssignmentsPage({ token }) {
                 </div>
                 <h3>{item.coordinator.name}</h3>
                 <small>{item.count} students</small>
-                {item.coordinator.teacherId ? <small>ID: {item.coordinator.teacherId}</small> : null}
               </article>
             ))
           ) : (
@@ -2041,7 +2023,7 @@ function TeacherAdminsPage({ token, currentUser }) {
     const { name, value } = event.target;
     setForm((currentForm) => ({
       ...currentForm,
-      [name]: name === "teacherId" ? value.toUpperCase() : value,
+      [name]: value,
     }));
   };
 
@@ -2119,7 +2101,7 @@ function TeacherAdminsPage({ token, currentUser }) {
           <p className="eyebrow">Teacher Admins</p>
           <h2>Create teacher access</h2>
           <span className="admin-file-hint">
-            Add a teacher account with employee ID, portal role, and a temporary password.
+            Add a teacher account with portal role and a temporary password.
           </span>
         </div>
 
@@ -2145,18 +2127,6 @@ function TeacherAdminsPage({ token, currentUser }) {
             value={form.collegeEmail}
             onChange={updateField}
             placeholder="teacher@aiet.org.in"
-            required
-          />
-        </label>
-
-        <label>
-          Teacher Employee ID
-          <input
-            name="teacherId"
-            type="text"
-            value={form.teacherId}
-            onChange={updateField}
-            placeholder="TCH101"
             required
           />
         </label>
@@ -2208,11 +2178,9 @@ function TeacherAdminsPage({ token, currentUser }) {
                     <span className={isMaster ? "font-bold text-amber-500" : ""}>
                       {isMaster ? "Master Admin" : "Teacher Admin"}
                     </span>
-                    {admin.teacherId ? <small>ID: {admin.teacherId}</small> : null}
                   </div>
                   <h3>{admin.name}</h3>
                   <small>{admin.collegeEmail}</small>
-                  {admin.teacherId ? <small>Teacher Employee ID: {admin.teacherId}</small> : null}
                   <p>Class Coordinator For: {formatSemesterList(admin.coordinatorSemesters)}</p>
                   {(admin.mentorAssignments || []).length ? (
                     admin.mentorAssignments.map((assignment, index) => (
@@ -2643,12 +2611,10 @@ function MentorAssignmentsPage({ token }) {
     setForm((currentForm) => ({ ...currentForm, [name]: value.toUpperCase() }));
   };
 
-  const selectTeacher = (teacherId) => {
-    const teacher = teachers.find((currentTeacher) => currentTeacher.id === teacherId);
+  const selectTeacher = (teacherUserId) => {
     setForm((currentForm) => ({
       ...currentForm,
-      teacherUserId: teacherId,
-      teacherId: teacher?.teacherId || currentForm.teacherId,
+      teacherUserId,
     }));
   };
 
@@ -2703,22 +2669,10 @@ function MentorAssignmentsPage({ token }) {
             <option value="">Choose teacher</option>
             {teachers.map((teacher) => (
               <option key={teacher.id} value={teacher.id}>
-                {teacher.name} {teacher.teacherId ? `(${teacher.teacherId})` : ""}
+                {teacher.name}
               </option>
             ))}
           </select>
-        </label>
-
-        <label>
-          Teacher ID
-          <input
-            name="teacherId"
-            type="text"
-            value={form.teacherId}
-            onChange={updateField}
-            placeholder="Teacher ID"
-            required
-          />
         </label>
 
         <label>
@@ -2749,7 +2703,6 @@ function MentorAssignmentsPage({ token }) {
           {teachers.map((teacher) => (
             <article className="card student-card" key={teacher.id}>
               <h3>{teacher.name}</h3>
-              {teacher.teacherId ? <small>ID: {teacher.teacherId}</small> : null}
               <p>Class Coordinator For: {formatSemesterList(teacher.coordinatorSemesters)}</p>
               {(teacher.mentorAssignments || []).length ? (
                 teacher.mentorAssignments.map((assignment, index) => (
