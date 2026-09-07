@@ -1642,42 +1642,53 @@ h4 {
   font-family: monospace;
 }
 
-.admin-sidebar-action-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+.admin-sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
 }
 
-.admin-footer-btn {
+.admin-action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.45rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 40px;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
   font-weight: 600;
-  color: #CBD5E1;
-  background: rgba(255, 255, 255, 0.06);
   text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;
   transition: all 160ms ease;
+  border: 1px solid transparent;
 }
 
-.admin-footer-btn:hover {
+.admin-back-btn {
+  color: #E2E8F0;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.admin-back-btn:hover {
   color: #FFFFFF;
   background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.admin-footer-btn.admin-logout-btn {
+.admin-logout-btn {
   color: #F87171;
   background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
-.admin-footer-btn.admin-logout-btn:hover {
-  background: rgba(239, 68, 68, 0.18);
-  color: #FEF2F2;
+.admin-logout-btn:hover {
+  color: #FFFFFF;
+  background: #DC2626;
+  border-color: #DC2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
 .admin-content {
@@ -1788,6 +1799,27 @@ h4 {
   border-radius: 50%;
   background: #22C55E;
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+.admin-topbar-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #DC2626;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.admin-topbar-logout-btn:hover {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+  color: #B91C1C;
 }
 
 .admin-body-container {

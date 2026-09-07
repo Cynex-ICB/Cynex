@@ -338,21 +338,26 @@ function AdminDashboard({ user, token, onLogout }) {
               </div>
             </div>
 
-            <div className="admin-sidebar-action-row">
-              <Link className="admin-footer-btn" to="/" onClick={closeAdminSidebar} title="View Live Website">
-                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                <span>Live Site</span>
+            <div className="admin-sidebar-actions">
+              <Link
+                className="admin-action-btn admin-back-btn"
+                to="/"
+                onClick={closeAdminSidebar}
+                title="Return to Cynex Website"
+              >
+                <ArrowLeft className="w-4 h-4 flex-shrink-0" />
+                <span>Back to Website</span>
               </Link>
               <button
-                className="admin-footer-btn admin-logout-btn"
+                className="admin-action-btn admin-logout-btn"
                 type="button"
                 onClick={() => {
                   closeAdminSidebar();
                   onLogout?.();
                 }}
-                title="Sign Out"
+                title="Sign Out of Dashboard"
               >
-                <LogOut className="w-3.5 h-3.5 mr-1.5" />
+                <LogOut className="w-4 h-4 flex-shrink-0" />
                 <span>Logout</span>
               </button>
             </div>
@@ -394,6 +399,15 @@ function AdminDashboard({ user, token, onLogout }) {
                 <span className="status-indicator"></span>
                 <span>{isMasterAdmin ? "Master Admin" : "Teacher Admin"}</span>
               </div>
+              <button
+                type="button"
+                className="admin-topbar-logout-btn"
+                onClick={() => onLogout?.()}
+                title="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Logout</span>
+              </button>
             </div>
           </header>
 
