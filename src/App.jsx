@@ -344,7 +344,6 @@ function App() {
                   replace
                   state={{
                     from: location,
-                    authMessage: 'Administrator credentials required to access the management dashboard.',
                   }}
                 />
               )
