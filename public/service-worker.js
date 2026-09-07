@@ -1,4 +1,4 @@
-const CACHE_NAME = "cse-icb-portal-v4";
+const CACHE_NAME = "cynex-portal-v5";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
@@ -8,11 +8,11 @@ const APP_SHELL = [
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches
       .open(CACHE_NAME)
       .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
   );
 });
 
@@ -47,7 +47,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put("/", responseCopy));
           return response;
         })
-        .catch(() => caches.match("/"))
+        .catch(() => caches.match("/") || fetch(request))
     );
     return;
   }
@@ -58,14 +58,16 @@ self.addEventListener("fetch", (event) => {
         return cachedResponse;
       }
 
-      return fetch(request).then((response) => {
-        if (response.ok) {
-          const responseCopy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseCopy));
-        }
+      return fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const responseCopy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseCopy));
+          }
 
-        return response;
-      });
+          return response;
+        })
+        .catch(() => cachedResponse);
     })
   );
 });
