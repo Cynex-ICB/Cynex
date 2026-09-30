@@ -22,7 +22,6 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
         registration.update();
       })
       .catch((error) => {
-        console.error('Service worker registration failed:', error);
       });
   });
 }

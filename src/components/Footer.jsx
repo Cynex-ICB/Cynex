@@ -4,7 +4,7 @@ function Footer() {
   return (
     <footer className="bg-academic-navy text-slate-300 font-sans border-t border-academic-navy-light mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-academic-navy-light/80">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-8 border-b border-academic-navy-light/80">
           
           {/* Brand Information */}
           <div className="space-y-3">
@@ -24,21 +24,6 @@ function Footer() {
               Academics
             </h4>
             <ul className="space-y-2 text-xs">
-              <li>
-                <Link to="/about" className="text-slate-300 hover:text-white transition-colors">
-                  About Department
-                </Link>
-              </li>
-              <li>
-                <Link to="/programs" className="text-slate-300 hover:text-white transition-colors">
-                  Academic Programs
-                </Link>
-              </li>
-              <li>
-                <Link to="/materials" className="text-slate-300 hover:text-white transition-colors">
-                  Study Materials
-                </Link>
-              </li>
               <li>
                 <Link to="/faculty" className="text-slate-300 hover:text-white transition-colors">
                   Faculty Directory
@@ -63,16 +48,6 @@ function Footer() {
                   Portal Login
                 </Link>
               </li>
-              <li>
-                <Link to="/placements-internships" className="text-slate-300 hover:text-white transition-colors">
-                  Placements &amp; Internships
-                </Link>
-              </li>
-              <li>
-                <Link to="/achievements" className="text-slate-300 hover:text-white transition-colors">
-                  Achievements
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -85,11 +60,6 @@ function Footer() {
               <li>
                 <Link to="/news-events" className="text-slate-300 hover:text-white transition-colors">
                   News &amp; Events
-                </Link>
-              </li>
-              <li>
-                <Link to="/research" className="text-slate-300 hover:text-white transition-colors">
-                  Research &amp; Labs
                 </Link>
               </li>
               <li>

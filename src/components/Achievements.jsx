@@ -1,56 +1,29 @@
 import { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
-import { Award, Trophy, ExternalLink, Sparkles, CheckCircle2 } from 'lucide-react';
-import { API_BASE_URL, readApiJson } from "../utils/api.js";
-
-const fallbackAchievements = [
-  {
-    _id: "achievement-1",
-    title: "VTU State-Level Hackathon Winners",
-    description: "Department student teams secured top honors for developing an autonomous LoRaWAN IoT soil monitoring node for coastal farmers.",
-    category: "Hackathon Award",
-    year: "2025",
-  },
-  {
-    _id: "achievement-2",
-    title: "National Cybersecurity Capture The Flag (CTF) Milestone",
-    description: "Student ethical defense squad ranked in the top 5% nationally in advanced vulnerability discovery and binary exploitation challenges.",
-    category: "Cyber Defense",
-    year: "2025",
-  },
-  {
-    _id: "achievement-3",
-    title: "IEEE Student Research Paper Publication",
-    description: "Undergraduate capstone research on smart contract formal verification was accepted and presented at an IEEE international conference.",
-    category: "Research Publication",
-    year: "2024",
-  },
-  {
-    _id: "achievement-4",
-    title: "CYNEX Technical Symposium & Project Exhibition",
-    description: "Annual department technical conclave showcasing 25+ working hardware prototypes, blockchain dApps, and defense simulations.",
-    category: "Department Conclave",
-    year: "2024",
-  },
-];
+import { Award, Trophy } from 'lucide-react';
+import { API_BASE_URL, readApiJson, resolveApiAssetUrl } from "../utils/api.js";
 
 function Achievements({ token }) {
-  const [achievements, setAchievements] = useState(fallbackAchievements);
+  const [achievements, setAchievements] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
     const loadAchievements = async () => {
+      setIsLoading(true);
+      setError("");
       try {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await fetch(`${API_BASE_URL}/content?type=achievement`, { headers });
         const data = await readApiJson(response);
 
-        if (isMounted && data.posts?.length) {
-          setAchievements(data.posts);
-        }
-      } catch (error) {
-        // Retain fallback achievements
+        if (isMounted) setAchievements(data.posts || []);
+      } catch (err) {
+        if (isMounted) setError(err.message || "Could not load achievements.");
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
 
@@ -62,7 +35,7 @@ function Achievements({ token }) {
   }, [token]);
 
   return (
-    <div className="py-12 px-4 sm:px-6 max-w-7xl mx-auto space-y-12 text-academic-text">
+    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-10 text-academic-text">
       
       {/* Header Banner */}
       <section className="page-hero">
@@ -80,74 +53,67 @@ function Achievements({ token }) {
         </div>
       </section>
 
+      {error && (
+        <div className="p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs">
+          {error}
+        </div>
+      )}
+
       {/* Achievement Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {achievements.map((item, index) => (
-          <motion.article
-            key={item._id || item.title}
-            className="institutional-card p-6 flex flex-col justify-between"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.35, delay: index * 0.05 }}
-          >
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-academic-gold-dark uppercase tracking-wider">
-                  <Trophy className="w-3.5 h-3.5 text-academic-gold" />
-                  <span>{item.category || "Department Accolade"}</span>
-                </span>
-                <span className="text-xs font-mono text-academic-text-muted">
-                  #{String(index + 1).padStart(2, '0')}
-                </span>
+      <section className="space-y-6">
+        {isLoading ? (
+          <div className="institutional-card p-12 text-center">
+            <p className="text-sm font-medium text-academic-text-muted">Loading achievements…</p>
+          </div>
+        ) : achievements.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {achievements.map((achievement) => (
+            <motion.div
+              key={achievement._id || achievement.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="institutional-card p-5 sm:p-6 space-y-3"
+            >
+              {(achievement.image?.url || achievement.imageUrl) && (
+                <img
+                  src={resolveApiAssetUrl(achievement.image?.url || achievement.imageUrl)}
+                  alt={achievement.title}
+                  className="w-full h-40 object-cover rounded-md border border-academic-border"
+                  loading="lazy"
+                />
+              )}
+              <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-academic-gold flex-shrink-0" />
+                <h3 className="text-base font-bold text-academic-navy">
+                  {achievement.title}
+                </h3>
               </div>
-
-              <h2 className="text-base sm:text-lg font-bold text-academic-navy mb-2">
-                {item.title}
-              </h2>
-
-              <p className="text-xs sm:text-sm text-academic-text-secondary leading-relaxed">
-                {item.description}
+              <p className="text-sm text-academic-text-secondary leading-relaxed">
+                {achievement.description}
               </p>
-            </div>
-
-            {item.link ? (
-              <div className="pt-4 mt-4 border-t border-academic-border">
-                <a
-                  href={item.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs font-semibold text-academic-accent hover:underline inline-flex items-center gap-1"
-                >
-                  <span>Read verification report</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded bg-academic-navy/10 text-academic-navy text-[10px] font-mono font-semibold uppercase">
+                  {achievement.type || "Achievement"}
+                </span>
+                <span className="text-xs text-academic-text-muted font-mono">
+                  {achievement.createdAt ? new Date(achievement.createdAt).toLocaleDateString() : ""}
+                </span>
               </div>
-            ) : null}
-          </motion.article>
-        ))}
-      </div>
-
-      {/* Technical Society Feature */}
-      <section className="institutional-card p-6 sm:p-8 bg-academic-bg border-academic-border">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <span className="text-xs font-mono font-semibold text-academic-gold-dark uppercase tracking-wider block">
-              Student Leadership
-            </span>
-            <h3 className="text-xl font-bold text-academic-navy">
-              CYNEX — Department Student Association
-            </h3>
-            <p className="text-xs sm:text-sm text-academic-text-secondary max-w-2xl leading-relaxed">
-              CYNEX is the official technical student society of the Department of CSE (IoT, Cyber Security &amp; Blockchain) at AIET. The association conducts weekly peer coding sprints, CTF practice drills, hardware prototyping bootcamps, and industrial tech talks.
+            </motion.div>
+          ))}
+        </div>
+        ) : (
+          <div className="institutional-card p-10 text-center space-y-2">
+            <h3 className="text-base font-bold text-academic-navy">No achievements published yet</h3>
+            <p className="text-xs text-academic-text-muted">
+              Department highlights, placements and student accolades will appear here once published.
             </p>
           </div>
-        </div>
+        )}
       </section>
-
     </div>
   );
 }
 
 export default Achievements;
-

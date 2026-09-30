@@ -16,7 +16,8 @@ function Materials({ token, user }) {
   const [subjects, setSubjects] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState(user?.semester || 3);
   const [isLoading, setIsLoading] = useState(true);
-  const isAdmin = user?.role === "admin";
+  const [error, setError] = useState("");
+  const isAdmin = ["admin", "master-admin"].includes(user?.role);
   const studentSemester = Number(user?.semester || 3);
 
   const authHeaders = {
@@ -27,11 +28,18 @@ function Materials({ token, user }) {
     if (!isAdmin) {
       setSelectedSemester(studentSemester);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, studentSemester, isAdmin]);
+
+  useEffect(() => {
     loadMaterials();
     loadSubjects();
-  }, [token, studentSemester, isAdmin, selectedSemester]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, selectedSemester]);
 
   const loadMaterials = async () => {
+    setIsLoading(true);
+    setError("");
     try {
       const semesterQuery = isAdmin ? `?semester=${selectedSemester}` : "";
       const response = await fetch(`${API_BASE_URL}/materials${semesterQuery}`, {
@@ -40,7 +48,7 @@ function Materials({ token, user }) {
       const data = await readApiJson(response);
       setMaterials(data.materials || []);
     } catch (err) {
-      console.error(err);
+      setError(err.message || "Could not load materials.");
     } finally {
       setIsLoading(false);
     }
@@ -54,44 +62,48 @@ function Materials({ token, user }) {
       const data = await readApiJson(response);
       setSubjects(data.subjects || []);
     } catch (err) {
-      console.error(err);
+      setError(err.message || "Could not load subjects.");
     }
   };
 
   const downloadMaterialFile = async (material) => {
     try {
+      const materialId = material._id || material.id;
       await downloadApiFile(
-        `${API_BASE_URL}/materials/${material._id}/file`,
+        `${API_BASE_URL}/materials/${materialId}/file`,
         token,
         material.file?.originalName || "material-file"
       );
     } catch (error) {
-      console.error(error);
+      setError(error.message || "Could not download file.");
     }
   };
 
   // Get materials for a specific subject
+  const getMaterialSubjectId = (material) => {
+    if (!material?.subject) return "";
+    if (typeof material.subject === "string") return material.subject;
+    return material.subject._id || material.subject.id || "";
+  };
+
   const getMaterialsForSubject = (subjectId) => {
-    return materials.filter(
-      (material) =>
-        material.subject === subjectId ||
-        (material.subject?._id === subjectId)
-    );
+    return materials.filter((material) => getMaterialSubjectId(material) === subjectId);
   };
 
   // Get subjects for selected semester
-  const visibleSemester = isAdmin ? parseInt(selectedSemester) : studentSemester;
-  const subjectsForSemester = subjects.filter((subject) => subject.semester === visibleSemester);
+  const visibleSemester = isAdmin ? Number(selectedSemester) : studentSemester;
+  const subjectsForSemester = subjects.filter(
+    (subject) => Number(subject.semester) === Number(visibleSemester)
+  );
 
   // Get general materials (notifications) for the semester
   const generalMaterials = materials.filter(
     (material) =>
-      (!material.subject || material.subject === null || material.subject === "") &&
-      material.semester === visibleSemester
+      !getMaterialSubjectId(material) && Number(material.semester) === Number(visibleSemester)
   );
 
   return (
-    <div className="py-12 px-4 sm:px-6 max-w-7xl mx-auto space-y-12 text-academic-text">
+    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-10 text-academic-text">
       
       {/* Header Banner */}
       <section className="page-hero">
@@ -142,6 +154,13 @@ function Materials({ token, user }) {
         )}
       </div>
 
+      {error && (
+        <div className="p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="institutional-card p-12 text-center">
           <p className="text-sm font-medium text-academic-text-muted">Loading semester curriculum resources...</p>
@@ -154,11 +173,11 @@ function Materials({ token, user }) {
               <h2 className="text-lg font-bold text-academic-navy border-b border-academic-border pb-2">
                 Semester Notifications &amp; Circulars
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {generalMaterials
-                  .filter((m) => m.category === "notification")
-                  .map((material) => (
-                    <article className="institutional-card p-5 space-y-2 border-l-4 border-l-academic-accent" key={material._id}>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {generalMaterials
+                    .filter((m) => m.category === "notification")
+                    .map((material) => (
+                    <article className="institutional-card p-5 space-y-2 border-l-4 border-l-academic-accent" key={material._id || material.id}>
                       <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-800 uppercase">
                         {categoryLabels[material.category]}
                       </span>
@@ -184,9 +203,9 @@ function Materials({ token, user }) {
           {/* Subject-wise Materials */}
           {subjectsForSemester.length > 0 ? (
             subjectsForSemester.map((subject) => {
-              const subjectMaterials = getMaterialsForSubject(subject._id);
+              const subjectMaterials = getMaterialsForSubject(subject._id || subject.id);
               return (
-                <div className="space-y-4" key={subject._id}>
+                <div className="space-y-4" key={subject._id || subject.id}>
                   <div className="border-b border-academic-border pb-2 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                     <h2 className="text-lg font-bold text-academic-navy">
                       <span className="font-mono text-academic-accent mr-2">{subject.code}</span>
@@ -200,9 +219,9 @@ function Materials({ token, user }) {
                   </div>
 
                   {subjectMaterials.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                      {subjectMaterials.map((material) => (
-                        <article className="institutional-card p-5 flex flex-col justify-between" key={material._id}>
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                       {subjectMaterials.map((material) => (
+                        <article className="institutional-card p-5 flex flex-col justify-between" key={material._id || material.id}>
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 uppercase">
@@ -267,11 +286,11 @@ function Materials({ token, user }) {
               <h2 className="text-lg font-bold text-academic-navy border-b border-academic-border pb-2">
                 General Academic References
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {generalMaterials
                   .filter((m) => m.category !== "notification")
                   .map((material) => (
-                    <article className="institutional-card p-5 flex flex-col justify-between" key={material._id}>
+                    <article className="institutional-card p-5 flex flex-col justify-between" key={material._id || material.id}>
                       <div className="space-y-2">
                         <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 uppercase">
                           {categoryLabels[material.category]}

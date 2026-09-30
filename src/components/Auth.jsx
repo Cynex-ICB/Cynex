@@ -15,7 +15,7 @@ const modeDetails = {
   login: {
     eyebrow: "Authorized Access",
     title: "Student & Faculty Portal Login",
-    note: "Enter your official institutional credentials to access CIE marks, academic materials, and administrative functions.",
+    note: "Enter your official institutional credentials to access CIE marks and administrative functions.",
   },
   reset: {
     eyebrow: "Credential Recovery",
@@ -342,7 +342,6 @@ function Auth({ onAuthenticated }) {
         <div className="text-center text-[11px] text-academic-text-muted space-y-1">
           <p className="flex items-center justify-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-academic-gold-dark" />
-            <span>Official VTU / AIET Department System</span>
           </p>
           <p>Unauthorized access is strictly prohibited and logged under institutional IT policies.</p>
         </div>

@@ -26,7 +26,7 @@ function formatMentorRanges(assignments = []) {
 
 function groupMarksBySubject(marks) {
   return marks.reduce((groups, mark) => {
-    const subjectId = mark.subject?._id || mark.subject?.id || "unknown";
+    const subjectId = mark.subject?._id || mark.subject?.id || mark.subject || "unknown";
     const existingGroup = groups[subjectId] || {
       subject: mark.subject,
       marks: [],
@@ -201,7 +201,7 @@ function Profile({ token, user, onUserUpdate }) {
           {marksBySubject.length > 0 ? (
             <div className="space-y-6">
               {marksBySubject.map((group) => (
-                <div key={group.subject?._id || group.subject?.code} className="institutional-card overflow-hidden">
+                <div key={group.subject?._id || group.subject?.id || group.subject?.code} className="institutional-card overflow-hidden">
                   <div className="p-4 sm:p-5 bg-academic-bg border-b border-academic-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h3 className="text-base font-bold text-academic-navy">
@@ -231,10 +231,10 @@ function Profile({ token, user, onUserUpdate }) {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-academic-border">
-                        {group.marks
+                        {[...group.marks]
                           .sort((first, second) => first.cieNumber - second.cieNumber)
                           .map((mark) => (
-                            <tr key={mark.id} className="hover:bg-slate-50/50">
+                            <tr key={mark.id || mark._id} className="hover:bg-slate-50/50">
                               <td className="py-3 px-4 font-semibold text-academic-navy">CIE Assessment {mark.cieNumber}</td>
                               <td className="py-3 px-4 font-mono font-bold text-emerald-700">{mark.marksObtained}</td>
                               <td className="py-3 px-4 font-mono text-academic-text-muted">{mark.maxMarks}</td>

@@ -11,7 +11,7 @@ function Contact() {
   };
 
   return (
-    <div className="py-12 px-4 sm:px-6 max-w-7xl mx-auto space-y-12 text-academic-text">
+    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-10 text-academic-text">
       
       {/* Header Banner */}
       <section className="page-hero">
@@ -29,10 +29,10 @@ function Contact() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Column: Coordinates (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
+<div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+         
+         {/* Left Column: Coordinates (5 cols) */}
+         <div className="lg:col-span-5 space-y-5">
           <div className="institutional-card p-6 sm:p-7 space-y-6">
             <div>
               <span className="text-[11px] font-mono text-academic-gold-dark uppercase tracking-wider block font-semibold">
@@ -59,7 +59,7 @@ function Contact() {
                 <Building2 className="w-4 h-4 text-academic-accent flex-shrink-0 mt-1" />
                 <div>
                   <strong className="text-academic-navy font-semibold block">Department Office:</strong>
-                  <span>Room 204 &amp; 206, Academic Block, AIET</span>
+                  <span>Room G01 - G06, Ratan Tata Block, AIET</span>
                 </div>
               </div>
 
@@ -117,7 +117,7 @@ function Contact() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="font-semibold text-academic-navy">Full Name *</label>
                     <input

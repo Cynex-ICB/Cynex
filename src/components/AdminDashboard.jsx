@@ -51,13 +51,6 @@ const initialContentForm = {
   link: "",
 };
 
-const initialStudentProfileForm = {
-  studentId: "",
-  semester: "3",
-  classCoordinatorName: "",
-  mentorName: "",
-};
-
 const initialCieForm = {
   semester: "3",
   subject: "",
@@ -204,6 +197,13 @@ function getRouteMetadata(pathname, isMasterAdmin) {
       description: "Enter, update, and upload CIE test scores for assigned students.",
     };
   }
+  if (pathname.includes("/admin/attendance")) {
+    return {
+      title: "Attendance Marking",
+      eyebrow: "Daily Attendance",
+      description: "Mark day-wise subject attendance for each semester cohort.",
+    };
+  }
   return {
     title: isMasterAdmin ? "Master Admin Panel" : "Admin Panel",
     eyebrow: isMasterAdmin ? "Department Administration" : "Faculty Portal",
@@ -314,6 +314,10 @@ function AdminDashboard({ user, token, onLogout }) {
                     <FileSpreadsheet className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>CIE Marks</span>
                   </NavLink>
+                  <NavLink to="/admin/attendance" onClick={closeAdminSidebar}>
+                    <UserCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Attendance</span>
+                  </NavLink>
                   <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
                     <BarChart3 className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>CIE Marks Overview</span>
@@ -408,6 +412,7 @@ function AdminDashboard({ user, token, onLogout }) {
                   <Route path="activity-alerts" element={<ActivityAlertsPage token={token} />} />
                   <Route path="showcase" element={<ShowcaseContentPage token={token} />} />
                   <Route path="cie-marks" element={<CieMarksPage token={token} />} />
+                  <Route path="attendance" element={<AttendanceMarkingPage token={token} />} />
                   <Route path="cie-overview" element={<MasterCieOverviewPage token={token} />} />
                 </>
               )}
@@ -530,7 +535,7 @@ function AcademicContentPage({ token }) {
         })
       );
       setMaterials((currentMaterials) =>
-        currentMaterials.filter((material) => material._id !== materialId)
+        currentMaterials.filter((material) => (material._id || material.id) !== materialId)
       );
       setStatus("Academic post deleted.");
     } catch (deleteError) {
@@ -573,7 +578,7 @@ function AcademicContentPage({ token }) {
           <select name="subject" value={form.subject} onChange={updateField}>
             <option value="">General post</option>
             {subjects.map((subject) => (
-              <option key={subject._id} value={subject._id}>
+              <option key={subject._id || subject.id} value={subject._id || subject.id}>
                 {subject.code} - {subject.name} (Sem {subject.semester})
               </option>
             ))}
@@ -966,12 +971,12 @@ function CieMarksPage({ token }) {
       .forEach((student) => {
         const existingMark = marks.find(
           (mark) =>
-            mark.student?._id === student._id &&
-            mark.subject?._id === form.subject &&
+            (mark.student?._id || mark.student?.id) === (student._id || student.id) &&
+            (mark.subject?._id || mark.subject?.id) === form.subject &&
             String(mark.cieNumber) === String(form.cieNumber)
         );
 
-        nextEntries[student._id] = {
+        nextEntries[student._id || student.id] = {
           marksObtained: existingMark ? String(existingMark.marksObtained) : "",
           remarks: existingMark?.remarks || "",
         };
@@ -1057,7 +1062,7 @@ function CieMarksPage({ token }) {
   const visibleMarks = marks.filter(
     (mark) =>
       mark.semester === visibleSemester &&
-      (!form.subject || mark.subject?._id === form.subject) &&
+      (!form.subject || (mark.subject?._id || mark.subject?.id) === form.subject) &&
       String(mark.cieNumber) === String(form.cieNumber)
   );
 
@@ -1089,7 +1094,7 @@ function CieMarksPage({ token }) {
             <select name="subject" value={form.subject} onChange={updateField} required>
               <option value="">Choose subject</option>
               {semesterSubjects.map((subject) => (
-                <option key={subject._id} value={subject._id}>
+                <option key={subject._id || subject.id} value={subject._id || subject.id}>
                   {subject.code} - {subject.name}
                 </option>
               ))}
@@ -1131,7 +1136,7 @@ function CieMarksPage({ token }) {
             <tbody>
               {semesterStudents.length ? (
                 semesterStudents.map((student) => (
-                  <tr key={student._id}>
+                  <tr key={student._id || student.id}>
                     <td>{student.usn || "-"}</td>
                     <td>{student.name}</td>
                     <td>
@@ -1139,9 +1144,9 @@ function CieMarksPage({ token }) {
                         type="number"
                         min="0"
                         max={form.maxMarks}
-                        value={markEntries[student._id]?.marksObtained || ""}
+                        value={(markEntries[student._id || student.id])?.marksObtained || ""}
                         onChange={(event) =>
-                          updateMarkEntry(student._id, "marksObtained", event.target.value)
+                          updateMarkEntry((student._id || student.id), "marksObtained", event.target.value)
                         }
                         placeholder="0"
                       />
@@ -1149,8 +1154,8 @@ function CieMarksPage({ token }) {
                     <td>
                       <input
                         type="text"
-                        value={markEntries[student._id]?.remarks || ""}
-                        onChange={(event) => updateMarkEntry(student._id, "remarks", event.target.value)}
+                        value={(markEntries[student._id || student.id])?.remarks || ""}
+                        onChange={(event) => updateMarkEntry((student._id || student.id), "remarks", event.target.value)}
                         placeholder="Optional"
                       />
                     </td>
@@ -1208,6 +1213,258 @@ function CieMarksPage({ token }) {
           )}
         </div>
       </div>
+    </section>
+  );
+}
+
+function AttendanceMarkingPage({ token }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [semester, setSemester] = useState("");
+  const [subjectId, setSubjectId] = useState("");
+  const [date, setDate] = useState(today);
+  const [students, setStudents] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [entries, setEntries] = useState({});
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const authHeaders = getAuthHeaders(token);
+
+  useEffect(() => {
+    loadOptions();
+  }, [token]);
+
+  const loadOptions = async () => {
+    try {
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/attendance/options`, { headers: authHeaders })
+      );
+      setStudents(data.students || []);
+      setSubjects(data.subjects || []);
+    } catch (loadError) {
+      setError(loadError.message);
+    }
+  };
+
+  const semesterStudents = students.filter(
+    (student) => semester && student.semester === Number(semester)
+  );
+  const semesterSubjects = subjects.filter(
+    (subject) => semester && subject.semester === Number(semester)
+  );
+
+  // Prefill statuses from already-marked records for the chosen subject + date
+  useEffect(() => {
+    if (!subjectId || !date) {
+      setEntries({});
+      return;
+    }
+    let cancelled = false;
+    async function loadExisting() {
+      try {
+        const data = await readJson(
+          await fetch(
+            `${API_BASE_URL}/attendance?subject=${subjectId}&date=${date}`,
+            { headers: authHeaders }
+          )
+        );
+        if (cancelled) return;
+        const next = {};
+        for (const record of data.records || []) {
+          const sid = record.student?._id || record.student?.id;
+          if (sid) next[sid] = record.status;
+        }
+        setEntries(next);
+      } catch {
+        // leave entries empty on load failure
+      }
+    }
+    loadExisting();
+    return () => {
+      cancelled = true;
+    };
+  }, [subjectId, date]);
+
+  const setStatusFor = (studentId, value) => {
+    setEntries((current) => ({ ...current, [studentId]: value }));
+  };
+
+  const markAll = (value) => {
+    const next = {};
+    semesterStudents.forEach((student) => {
+      next[student._id || student.id] = value;
+    });
+    setEntries(next);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setStatus("");
+    setError("");
+    if (!subjectId || !date) {
+      setError("Select a subject and date before saving attendance.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const unmarked = semesterStudents.filter(
+        (student) => !(entries[student._id || student.id] === "present" || entries[student._id || student.id] === "absent")
+      );
+      if (unmarked.length > 0) {
+        setError(`Mark present/absent for all students before saving (${unmarked.length} unmarked).`);
+        setIsLoading(false);
+        return;
+      }
+      const data = await readJson(
+        await fetch(`${API_BASE_URL}/attendance/mark`, {
+          method: "POST",
+          headers: { ...authHeaders, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subject: subjectId,
+            date,
+            entries: semesterStudents.map((student) => ({
+              student: student._id || student.id,
+              status: entries[student._id || student.id],
+            })),
+          }),
+        })
+      );
+      const next = {};
+      for (const record of data.records || []) {
+        const sid = record.student?._id || record.student?.id;
+        if (sid) next[sid] = record.status;
+      }
+      setEntries(next);
+      setStatus(`Saved attendance for ${data.saved} students.`);
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const presentCount = semesterStudents.filter((s) => (entries[s._id || s.id]) === "present").length;
+
+  return (
+    <section className="admin-route-panel">
+      <form className="card admin-form" onSubmit={handleSubmit}>
+        <div>
+          <p className="eyebrow">Daily Attendance</p>
+          <h2>Mark subject attendance</h2>
+        </div>
+
+        <div className="form-row-2">
+          <label>
+            Semester
+            <select
+              value={semester}
+              onChange={(event) => {
+                setSemester(event.target.value);
+                setSubjectId("");
+                setEntries({});
+              }}
+            >
+              <option value="">Choose semester</option>
+              {[3, 4, 5, 6, 7, 8].map((sem) => (
+                <option key={sem} value={sem}>
+                  Semester {sem}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Subject
+            <select
+              value={subjectId}
+              onChange={(event) => setSubjectId(event.target.value)}
+              disabled={!semester}
+            >
+              <option value="">Choose subject</option>
+              {semesterSubjects.map((subject) => (
+                <option key={subject._id || subject.id} value={subject._id || subject.id}>
+                  {subject.code} - {subject.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="form-row-2">
+          <label>
+            Date
+            <input
+              type="date"
+              value={date}
+              max={today}
+              onChange={(event) => setDate(event.target.value)}
+            />
+          </label>
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-end" }}>
+            <button type="button" className="admin-action-btn admin-back-btn" onClick={() => markAll("present")}>
+              All Present
+            </button>
+            <button type="button" className="admin-action-btn admin-back-btn" onClick={() => markAll("absent")}>
+              All Absent
+            </button>
+          </div>
+        </div>
+
+        <p className="admin-file-hint">
+          {semesterStudents.length
+            ? `${presentCount} of ${semesterStudents.length} marked present. All students must be marked before saving.`
+            : "Select a semester to load the student roster."}
+        </p>
+
+        <div className="cie-sheet-table-wrap">
+          <table className="cie-sheet-table">
+            <thead>
+              <tr>
+                <th>USN</th>
+                <th>Name</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {semesterStudents.length ? (
+                semesterStudents.map((student) => (
+                  <tr key={student._id || student.id}>
+                    <td>{student.usn || "-"}</td>
+                    <td>{student.name}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        {(["present", "absent"]).map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setStatusFor((student._id || student.id), value)}
+                            className={`admin-action-btn ${
+                              (entries[student._id || student.id]) === value ? "semester-tab active" : "semester-tab"
+                            }`}
+                            style={{ minHeight: "36px", textTransform: "capitalize" }}
+                          >
+                            {value}
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3">No students found for this semester.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {status ? <p className="form-message success">{status}</p> : null}
+        {error ? <p className="form-message error">{error}</p> : null}
+
+        <button className="primary-button admin-submit" type="submit" disabled={isLoading}>
+          {isLoading ? "Saving..." : "Save Attendance"}
+        </button>
+      </form>
     </section>
   );
 }
@@ -1380,21 +1637,19 @@ function ContentManager({ token, fixedType, allowTypeChoice = false, eyebrow, ti
           </>
         ) : null}
 
-        {form.type === "placement" || form.type === "internship" ? (
-          <label>
-            Upload image
-            <input
-              ref={imageInputRef}
-              name="image"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(event) => setSelectedImage(event.target.files?.[0] || null)}
-            />
-            <span className="admin-file-hint">
-              {selectedImage ? selectedImage.name : "Allowed formats: JPG, PNG, WEBP up to 5 MB."}
-            </span>
-          </label>
-        ) : null}
+        <label>
+          Upload image
+          <input
+            ref={imageInputRef}
+            name="image"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(event) => setSelectedImage(event.target.files?.[0] || null)}
+          />
+          <span className="admin-file-hint">
+            {selectedImage ? selectedImage.name : "Allowed formats: JPG, PNG, WEBP up to 5 MB."}
+          </span>
+        </label>
 
         <label>
           Link
@@ -1489,13 +1744,13 @@ function SubjectsPage({ token }) {
 
     try {
       await readJson(
-        await fetch(`${API_BASE_URL}/subjects/${deleteTarget._id}`, {
+        await fetch(`${API_BASE_URL}/subjects/${deleteTarget._id || deleteTarget.id}`, {
           method: "DELETE",
           headers: authHeaders,
         })
       );
       setSubjects((currentSubjects) =>
-        currentSubjects.filter((subject) => subject._id !== deleteTarget._id)
+        currentSubjects.filter((subject) => (subject._id || subject.id) !== (deleteTarget._id || deleteTarget.id))
       );
       setStatus(`Course "${deleteTarget.code}" deleted successfully.`);
       setDeleteTarget(null);
@@ -1507,7 +1762,7 @@ function SubjectsPage({ token }) {
   };
 
   const filteredSubjects = subjects.filter(
-    (subject) => subject.semester === parseInt(selectedSemesterFilter)
+    (subject) => subject.semester === Number(selectedSemesterFilter)
   );
 
   return (
@@ -1643,7 +1898,7 @@ function SubjectsPage({ token }) {
         <div className="subject-list">
           {filteredSubjects.length ? (
             filteredSubjects.map((subject) => (
-              <article className="card modern-subject-card" key={subject._id}>
+              <article className="card modern-subject-card" key={subject._id || subject.id}>
                 <div className="modern-subject-card-header">
                   <div className="flex items-center gap-2">
                     <span className="modern-subject-code">{subject.code}</span>
@@ -2721,241 +2976,13 @@ function MentorAssignmentsPage({ token }) {
   );
 }
 
-function StudentsPage({ token }) {
-  const [form, setForm] = useState(initialStudentProfileForm);
-  const [students, setStudents] = useState([]);
-  const [selectedSemesterFilter, setSelectedSemesterFilter] = useState("all");
-  const [status, setStatus] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const authHeaders = getAuthHeaders(token);
-
-  useEffect(() => {
-    loadStudents();
-  }, [token]);
-
-  const loadStudents = async () => {
-    try {
-      const data = await readJson(
-        await fetch(`${API_BASE_URL}/users/students`, {
-          headers: authHeaders,
-        })
-      );
-      setStudents(data.students || []);
-    } catch (loadError) {
-      setError(loadError.message);
-    }
-  };
-
-  const updateField = (event) => {
-    const { name, value } = event.target;
-    setForm((currentForm) => ({ ...currentForm, [name]: value }));
-  };
-
-  const selectStudent = (student) => {
-    setForm({
-      studentId: student.id,
-      semester: String(student.semester || 3),
-      classCoordinatorName: student.classCoordinatorName || "",
-      mentorName: student.mentorName || "",
-    });
-    setStatus("");
-    setError("");
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setStatus("");
-    setError("");
-
-    if (!form.studentId) {
-      setError("Select a student before saving.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const data = await readJson(
-        await fetch(`${API_BASE_URL}/users/students/${form.studentId}/profile`, {
-          method: "PATCH",
-          headers: {
-            ...authHeaders,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            semester: form.semester,
-            classCoordinatorName: form.classCoordinatorName,
-            mentorName: form.mentorName,
-          }),
-        })
-      );
-
-      setStudents((currentStudents) =>
-        currentStudents.map((student) => (student.id === data.student.id ? data.student : student))
-      );
-      setForm({
-        studentId: data.student.id,
-        semester: String(data.student.semester || 3),
-        classCoordinatorName: data.student.classCoordinatorName || "",
-        mentorName: data.student.mentorName || "",
-      });
-      setStatus("Student profile updated.");
-    } catch (submitError) {
-      setError(submitError.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const selectedStudent = students.find((student) => student.id === form.studentId);
-  const filteredStudents =
-    selectedSemesterFilter === "all"
-      ? students
-      : students.filter((student) => student.semester === parseInt(selectedSemesterFilter));
-
-  return (
-    <section className="admin-grid admin-route-panel">
-      <form className="card admin-form" onSubmit={handleSubmit}>
-        <div>
-          <p className="eyebrow">Student Profiles</p>
-          <h2>Assign coordinator and mentor</h2>
-          <span className="admin-file-hint">
-            Select a student, then save their class coordinator, mentor, and semester.
-          </span>
-        </div>
-
-        <label>
-          Student
-          <select
-            name="studentId"
-            value={form.studentId}
-            onChange={(event) => {
-              const student = students.find((currentStudent) => currentStudent.id === event.target.value);
-              if (student) {
-                selectStudent(student);
-              } else {
-                setForm(initialStudentProfileForm);
-              }
-            }}
-            required
-          >
-            <option value="">Choose student</option>
-            {students.map((student) => (
-              <option key={student.id} value={student.id}>
-                {student.name} - Sem {student.semester}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {selectedStudent ? (
-          <div className="student-selected-note">
-            <strong>{selectedStudent.collegeEmail}</strong>
-            {selectedStudent.usn ? <span>{selectedStudent.usn}</span> : null}
-          </div>
-        ) : null}
-
-        <label>
-          Semester
-          <select name="semester" value={form.semester} onChange={updateField}>
-            {semesterOptions.map((semester) => (
-              <option key={semester} value={semester}>
-                Semester {semester}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Class Coordinator Name
-          <input
-            name="classCoordinatorName"
-            type="text"
-            value={form.classCoordinatorName}
-            onChange={updateField}
-            placeholder="Faculty coordinator name"
-            maxLength="80"
-          />
-        </label>
-
-        <label>
-          Mentor Name
-          <input
-            name="mentorName"
-            type="text"
-            value={form.mentorName}
-            onChange={updateField}
-            placeholder="Faculty mentor name"
-            maxLength="80"
-          />
-        </label>
-
-        {status ? <p className="form-message success">{status}</p> : null}
-        {error ? <p className="form-message error">{error}</p> : null}
-
-        <button className="primary-button admin-submit" type="submit" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Student Profile"}
-        </button>
-      </form>
-
-      <div className="admin-posts">
-        <div className="admin-section-heading">
-          <p className="eyebrow">Students</p>
-          <h2>Registered students</h2>
-        </div>
-
-        <label className="semester-filter">
-          Filter by Semester
-          <select
-            value={selectedSemesterFilter}
-            onChange={(event) => setSelectedSemesterFilter(event.target.value)}
-          >
-            <option value="all">All Semesters</option>
-            {semesterOptions.map((semester) => (
-              <option key={semester} value={semester}>
-                Semester {semester}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="student-list">
-          {filteredStudents.length ? (
-            filteredStudents.map((student) => (
-              <article className="card student-card" key={student.id}>
-                <div className="student-card-top">
-                  <span>Semester {student.semester}</span>
-                  <button type="button" onClick={() => selectStudent(student)}>
-                    Edit
-                  </button>
-                </div>
-                <h3>{student.name}</h3>
-                <small>{student.collegeEmail}</small>
-                {student.usn ? <small>USN: {student.usn}</small> : null}
-                <p>Coordinator: {student.classCoordinatorName || "Not assigned"}</p>
-                <p>Mentor: {student.mentorName || "Not assigned"}</p>
-              </article>
-            ))
-          ) : (
-            <div className="card empty-state">
-              <h3>No students found</h3>
-              <p>Students will appear here after master admin creates accounts.</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function ContentList({ eyebrow, title, items, getTypeLabel, onDelete, token }) {
   const downloadContentFile = async (item) => {
     if (!token) return;
 
     try {
       await downloadApiFile(
-        `${API_BASE_URL}/materials/${item._id}/file`,
+        `${API_BASE_URL}/materials/${item._id || item.id}/file`,
         token,
         item.file?.originalName || "material-file"
       );
@@ -2974,10 +3001,10 @@ function ContentList({ eyebrow, title, items, getTypeLabel, onDelete, token }) {
       <div className="material-list">
         {items.length ? (
           items.map((item) => (
-            <article className="card material-card" key={item._id}>
+            <article className="card material-card" key={item._id || item.id}>
               <div className="material-card-top">
                 <span>{getTypeLabel(item)}</span>
-                <button type="button" onClick={() => onDelete(item._id)}>
+                <button type="button" onClick={() => onDelete(item._id || item.id)}>
                   Delete
                 </button>
               </div>

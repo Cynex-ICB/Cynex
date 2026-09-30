@@ -1,60 +1,113 @@
 import { motion } from 'framer-motion';
-import { Mail, MapPin, GraduationCap, Award, BookOpen, Users } from 'lucide-react';
+import { MapPin, GraduationCap, Users } from 'lucide-react';
 
 const facultyMembers = [
   {
     name: 'Prof. Vasudev S. Shahapur',
     role: 'Head of the Department & Associate Professor',
-    qualification: 'M.Tech, Ph.D. (Pursuing)',
+    qualification: 'M.Tech',
     focus: 'Internet of Things, Embedded Hardware & Sensor Telemetry',
-    email: 'vasudev.shahapur@aiet.org.in',
-    office: 'Room 204, Academic Block, AIET Campus',
+    office: 'Room G01, Academic Block, AIET Campus',
     experience: '14+ Years in Teaching & Research',
     initials: 'VS',
+    image: 'https://picsum.photos/seed/faculty1/200/200',
+    isLabAssistant: false,
   },
   {
     name: 'Prof. Fayaz Ahmed Sheik',
     role: 'Assistant Professor',
     qualification: 'M.Tech (Computer Science & Engineering)',
     focus: 'Web Technologies, Database Systems & Distributed Ledgers',
-    email: 'fayaz.sheik@aiet.org.in',
     office: 'Room 206, Academic Block, AIET Campus',
     experience: '8+ Years in Teaching & Industry Mentorship',
     initials: 'FS',
+    image: 'https://picsum.photos/seed/faculty2/200/200',
+    isLabAssistant: false,
   },
   {
     name: 'Prof. Joytibha R. Chichankar',
     role: 'Assistant Professor',
     qualification: 'M.Tech (Computer Science & Engineering)',
     focus: 'Theory of Computation, Artificial Intelligence & Computer Vision',
-    email: 'joytibha.c@aiet.org.in',
     office: 'Room 208, Academic Block, AIET Campus',
     experience: '7+ Years in Academic Instruction',
     initials: 'JC',
+    image: 'https://picsum.photos/seed/faculty3/200/200',
+    isLabAssistant: false,
   },
   {
     name: 'Prof. Savitha S. K.',
     role: 'Assistant Professor',
     qualification: 'M.Tech (Information Technology & Cybersecurity)',
     focus: 'Cybersecurity, Network Vulnerability Assessment & Penetration Testing',
-    email: 'savitha.sk@aiet.org.in',
     office: 'Room 210, Academic Block, AIET Campus',
     experience: '6+ Years in Security Research & Laboratory Instruction',
     initials: 'SS',
+    image: 'https://picsum.photos/seed/faculty4/200/200',
+    isLabAssistant: false,
+  },
+  {
+    name: 'Prof. Shibu C',
+    role: 'Assistant Professor',
+    qualification: 'Ph.D. (Computer Science & Engineering)',
+    focus: 'Cloud Computing, Distributed Systems & Edge AI',
+    office: 'Room 212, Academic Block, AIET Campus',
+    experience: '11+ Years in Teaching & Research',
+    initials: 'SP',
+    image: 'https://picsum.photos/seed/faculty5/200/200',
+    isLabAssistant: false,
+  },
+  {
+    name: 'Prof. Namratha',
+    role: 'Associate Professor',
+    qualification: 'Ph.D. (Electronics & Communication)',
+    focus: 'Signal Processing, Image Analysis & Machine Learning',
+    office: 'Room 214, Academic Block, AIET Campus',
+    experience: '10+ Years in Teaching & Research',
+    initials: 'ND',
+    image: 'https://picsum.photos/seed/faculty6/200/200',
+    isLabAssistant: false,
+  },
+  {
+    name: 'Pranitha',
+    role: 'Lab Assistant',
+    qualification: 'B.E. (Computer Science & Engineering)',
+    office: 'Lab 101, Academic Block, AIET Campus',
+    initials: 'PA',
+    image: 'https://picsum.photos/seed/faculty7/200/200',
+    isLabAssistant: true,
+  },
+  {
+    name: 'Anitha',
+    role: 'Lab Assistant',
+    qualification: 'Diploma in Electronics & Communication',
+    office: 'Lab 101, Academic Block, AIET Campus',
+    initials: 'RK',
+    image: 'https://picsum.photos/seed/faculty8/200/200',
+    isLabAssistant: true,
+  },
+  {
+    name: 'Gayitri',
+    role: 'Lab Assistant',
+    qualification: 'B.E. (Computer Science & Engineering)',
+    office: 'Lab 102, Academic Block, AIET Campus',
+    initials: 'SB',
+    image: 'https://picsum.photos/seed/faculty9/200/200',
+    isLabAssistant: true,
   },
 ];
 
 function Faculty() {
   return (
-    <div className="py-12 px-4 sm:px-6 max-w-7xl mx-auto space-y-12 text-academic-text">
+    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-10 text-academic-text">
       
       {/* Header Banner */}
       <section className="page-hero">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-academic-navy text-white text-xs font-mono font-semibold uppercase tracking-wider mb-3">
+          {/* <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-academic-navy text-white text-xs font-mono font-semibold uppercase tracking-wider mb-3">
             <Users className="w-3.5 h-3.5 text-academic-gold-light" />
             <span>Academic Faculty Directory</span>
-          </div>
+          </div>*/}
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-academic-navy tracking-tight">
             Department Faculty &amp; Academic Mentors
           </h1>
@@ -65,7 +118,7 @@ function Faculty() {
       </section>
 
       {/* Faculty Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {facultyMembers.map((member, index) => (
           <motion.article
             key={member.name}
@@ -77,15 +130,27 @@ function Faculty() {
           >
             <div>
               <div className="flex items-start gap-4 pb-4 border-b border-academic-border">
-                {/* Academic Avatar Seal */}
-                <div className="w-14 h-14 rounded-lg bg-academic-navy text-academic-gold-light font-bold text-lg flex items-center justify-center flex-shrink-0 shadow-soft border border-academic-gold/20">
-                  {member.initials}
+                {/* Academic Avatar Image */}
+                <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-soft border border-academic-gold/20">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-14 h-14 rounded-lg bg-academic-navy text-academic-gold-light font-bold text-lg hidden items-center justify-center flex-shrink-0 shadow-soft border border-academic-gold/20">
+                    {member.initials}
+                  </div>
                 </div>
                 <div className="space-y-0.5">
                   <h2 className="text-lg font-bold text-academic-navy leading-snug">
                     {member.name}
                   </h2>
-                  <p className="text-xs font-semibold text-academic-gold-dark font-mono">
+                  <p className={`text-xs font-semibold font-mono ${member.isLabAssistant ? 'text-academic-accent' : 'text-academic-gold-dark'}`}>
                     {member.role}
                   </p>
                   <p className="text-xs text-academic-text-muted">
@@ -94,26 +159,37 @@ function Faculty() {
                 </div>
               </div>
 
-              {/* Specialization & Experience */}
-              <div className="py-4 space-y-3">
-                <div>
-                  <span className="text-[11px] font-mono text-academic-text-muted uppercase tracking-wider block">
-                    Specialization &amp; Research Focus:
-                  </span>
-                  <p className="text-xs sm:text-sm font-medium text-academic-text mt-0.5">
-                    {member.focus}
-                  </p>
-                </div>
+              {/* Specialization & Experience (Professors only) */}
+              {!member.isLabAssistant && (
+                <div className="py-4 space-y-3">
+                  <div>
+                    <span className="text-[11px] font-mono text-academic-text-muted uppercase tracking-wider block">
+                      Specialization &amp; Research Focus:
+                    </span>
+                    <p className="text-xs sm:text-sm font-medium text-academic-text mt-0.5">
+                      {member.focus}
+                    </p>
+                  </div>
 
-                <div>
-                  <span className="text-[11px] font-mono text-academic-text-muted uppercase tracking-wider block">
-                    Academic Experience:
-                  </span>
+                  <div>
+                    <span className="text-[11px] font-mono text-academic-text-muted uppercase tracking-wider block">
+                      Academic Experience:
+                    </span>
+                    <p className="text-xs text-academic-text-secondary mt-0.5">
+                      {member.experience}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Lab Assistant Area */}
+              {member.isLabAssistant && (
+                <div className="py-4">
                   <p className="text-xs text-academic-text-secondary mt-0.5">
-                    {member.experience}
+                    Assists with laboratory sessions, equipment maintenance, and student practical guidance.
                   </p>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Coordinates & Office Information */}
@@ -122,22 +198,13 @@ function Faculty() {
                 <MapPin className="w-3.5 h-3.5 text-academic-accent flex-shrink-0" />
                 <span>{member.office}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-academic-accent flex-shrink-0" />
-                <a
-                  href={`mailto:${member.email}`}
-                  className="text-academic-accent hover:underline font-mono"
-                >
-                  {member.email}
-                </a>
-              </div>
             </div>
           </motion.article>
         ))}
       </div>
 
       {/* Office Hours & Academic Proctorship Note */}
-      <section className="institutional-card p-6 sm:p-8 bg-academic-bg border-academic-border">
+      {/* <section className="institutional-card p-6 sm:p-8 bg-academic-bg border-academic-border">
         <div className="max-w-3xl space-y-2">
           <h3 className="text-base font-bold text-academic-navy">
             Student Proctorship &amp; Office Hours
@@ -146,7 +213,7 @@ function Faculty() {
             Every undergraduate student in the Department of CSE (ICB) is assigned a dedicated faculty mentor / proctor. Faculty office hours for project guidance, Continuous Internal Evaluation (CIE) reviews, and academic counseling are conducted between 3:30 PM – 4:30 PM on academic working days.
           </p>
         </div>
-      </section>
+      </section>*/}
 
     </div>
   );
