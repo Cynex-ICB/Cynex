@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { Mail } from 'lucide-react';
+import CadenceLogo from './CadenceLogo.jsx';
 
 function Footer() {
   return (
@@ -8,14 +10,21 @@ function Footer() {
           
           {/* Brand Information */}
           <div className="space-y-3">
-            <Link to="/" className="inline-block">
-              <span className="text-2xl font-extrabold tracking-tight text-white">
-                Cynex
-              </span>
+            <Link to="/" className="inline-block hover:opacity-90 transition-opacity">
+              <CadenceLogo size={30} />
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
               Department of Computer Science &amp; Engineering (IoT, Cyber Security &amp; Blockchain Technology). Dedicated to computing excellence, technical rigor, and student innovation.
             </p>
+            <div className="pt-1">
+              <a
+                href="mailto:cadence.platform@gmail.com"
+                className="inline-flex items-center gap-1.5 text-xs text-academic-gold-light hover:text-white transition-colors font-mono"
+              >
+                <Mail className="w-3.5 h-3.5 shrink-0" />
+                <span>cadence.platform@gmail.com</span>
+              </a>
+            </div>
           </div>
 
           {/* Academic Links */}
@@ -67,6 +76,15 @@ function Footer() {
                   Contact Department
                 </Link>
               </li>
+              <li className="pt-1">
+                <a
+                  href="mailto:cadence.platform@gmail.com"
+                  className="text-academic-accent hover:text-blue-300 transition-colors font-mono break-all inline-flex items-center gap-1.5"
+                >
+                  <Mail className="w-3.5 h-3.5 shrink-0" />
+                  <span>cadence.platform@gmail.com</span>
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -74,7 +92,7 @@ function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <p>&copy; {new Date().getFullYear()} Cynex &bull; Department of CSE (IoT, Cyber Security &amp; Blockchain Technology).</p>
+          <p>&copy; {new Date().getFullYear()} Cadence &bull; Department of CSE (IoT, Cyber Security &amp; Blockchain Technology).</p>
           <div className="flex items-center gap-4">
             <Link to="/" className="hover:text-slate-400 transition-colors">Home</Link>
             <span>&bull;</span>

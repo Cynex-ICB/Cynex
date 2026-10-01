@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Bell, Clock, MapPin } from 'lucide-react';
+import { Calendar, Bell, Clock, MapPin, Mail } from 'lucide-react';
 import { API_BASE_URL, readApiJson } from "../utils/api.js";
 
 function NewsEvents() {
@@ -190,6 +190,22 @@ function NewsEvents() {
         )}
       </section>
 
+      {/* Event Coordination & Notices Desk */}
+      <section className="institutional-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 className="text-base font-bold text-academic-navy">Event Coordination &amp; Circular Inquiries</h3>
+          <p className="text-xs sm:text-sm text-academic-text-secondary mt-1">
+            Questions regarding academic calendars, workshop registrations, or circulars:
+          </p>
+        </div>
+        <a
+          href="mailto:cadence.platform@gmail.com"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-academic-navy hover:bg-academic-navy-light text-white text-xs font-semibold shadow-soft transition-colors font-mono shrink-0"
+        >
+          <Mail className="w-4 h-4 text-academic-gold-light" />
+          <span>cadence.platform@gmail.com</span>
+        </a>
+      </section>
     </div>
   );
 }

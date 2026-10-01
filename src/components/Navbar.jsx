@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import CadenceLogo from './CadenceLogo.jsx';
 import {
   Menu,
   X,
@@ -16,6 +17,7 @@ import {
   Calendar,
   PhoneCall,
   Brain,
+  Bell,
 } from 'lucide-react';
 
 const mainNavLinks = [
@@ -28,9 +30,9 @@ const mainNavLinks = [
 ];
 
 const studentNavLinks = [
-  { label: 'My Portal', to: '/portal', icon: LayoutDashboard },
+  { label: 'Dashboard', to: '/portal', icon: LayoutDashboard },
   { label: 'Study Materials', to: '/materials', icon: BookOpen },
-  { label: 'CynAI', to: '/cynai', icon: Brain },
+  { label: 'CyAI', to: '/cynai', icon: Brain },
   { label: 'Marks', to: '/marks', icon: Award },
   { label: 'Attendance', to: '/attendance', icon: UserCheck },
   { label: 'Profile', to: '/profile', icon: User },
@@ -48,33 +50,31 @@ function Navbar({ user, onLogout }) {
   const navLinks = isStudent ? studentNavLinks : mainNavLinks;
 
   return (
-    <nav className="sticky top-0 z-40 bg-academic-navy border-b border-academic-navy-light/90 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14 sm:h-16 gap-3">
+    <nav className="sticky top-0 z-40 bg-[#0B1F3A] border-b border-slate-800 shadow-xs h-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full">
+        <div className="flex items-center justify-between h-full gap-4">
           
-          {/* Brand Identity - Cynex */}
+          {/* Brand Identity - Cadence */}
           <Link
             to="/"
             onClick={closeMenu}
-            className="flex items-center text-white hover:opacity-90 transition-opacity flex-shrink-0"
+            className="flex items-center hover:opacity-90 transition-opacity flex-shrink-0"
           >
-            <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
-              Cynex
-            </span>
+            <CadenceLogo size={36} />
           </Link>
 
-{/* Desktop Navigation Links */}
-           <div className="hidden lg:flex items-center space-x-1 xl:space-x-1.5">
-             {navLinks.map((link) => (
+          {/* Desktop Navigation Links */}
+          <div className="hidden lg:flex items-center space-x-1">
+            {navLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
-                end={link.to === '/'}
+                end={link.to === '/' || link.to === '/portal'}
                 className={({ isActive }) =>
-                  `px-2 xl:px-2.5 py-1.5 rounded text-xs font-semibold tracking-wide transition-all ${
+                  `px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                     isActive
-                      ? 'text-white bg-academic-navy-light border-b-2 border-academic-accent shadow-sm'
-                      : 'text-slate-300 hover:text-white hover:bg-white/10'
+                      ? 'text-white bg-white/10 shadow-xs border border-white/15'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`
                 }
               >
@@ -83,18 +83,18 @@ function Navbar({ user, onLogout }) {
             ))}
           </div>
 
-{/* Desktop Sticky Right Utility (Compact Portal Status) */}
-           <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
+          {/* Desktop Sticky Right Utility */}
+          <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
             {isAdmin ? (
               <div className="flex items-center gap-2">
                 <Link
                   to="/admin"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-sm transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-xs transition-colors"
                 >
                   <LayoutDashboard className="w-3.5 h-3.5" />
                   <span>Admin Panel</span>
                 </Link>
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-academic-navy-light border border-slate-700 text-slate-200 text-xs font-medium">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-slate-700 text-slate-200 text-xs font-medium">
                   <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                   <span className="max-w-[100px] truncate">{user.name?.split(' ')[0]}</span>
                 </div>
@@ -102,35 +102,42 @@ function Navbar({ user, onLogout }) {
                   type="button"
                   onClick={() => onLogout?.()}
                   title="Sign Out"
-                  className="p-1.5 rounded text-slate-400 hover:text-red-300 hover:bg-white/10 transition-colors"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-300 hover:bg-white/10 transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : user ? (
-              <div className="flex items-center gap-1.5">
-                <Link
-                  to="/portal"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-academic-accent hover:bg-academic-accent-hover text-white text-xs font-semibold transition-colors"
-                  title="Open Student Portal"
+              <div className="flex items-center gap-2.5">
+                {/* Notification Bell */}
+                <button
+                  type="button"
+                  className="relative p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                  title="Notifications"
                 >
-                  <LayoutDashboard className="w-3.5 h-3.5" />
-                  <span>Portal</span>
-                </Link>
+                  <Bell className="w-4 h-4" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-400 ring-2 ring-[#0B1F3A]" />
+                </button>
+
+                {/* Student Avatar + Name */}
                 <Link
                   to="/profile"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-academic-navy-light hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-medium transition-colors"
-                  title="View Student CIE Marks"
+                  className="flex items-center gap-2 py-1 px-2.5 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
+                  title="View Profile"
                 >
-                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  <span className="max-w-[90px] truncate">{user.name?.split(' ')[0]}</span>
-                  <span className="text-[10px] text-academic-gold-light font-mono">(CIE)</span>
+                  <div className="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
+                  </div>
+                  <span className="text-xs font-semibold text-slate-200 max-w-[110px] truncate">
+                    {user?.name?.split(' ')[0] || 'Student'}
+                  </span>
                 </Link>
+
                 <button
                   type="button"
                   onClick={() => onLogout?.()}
                   title="Sign Out"
-                  className="p-1.5 rounded text-slate-400 hover:text-red-300 hover:bg-white/10 transition-colors"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-300 hover:bg-white/10 transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -138,7 +145,7 @@ function Navbar({ user, onLogout }) {
             ) : (
               <Link
                 to="/login"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-academic-accent hover:bg-academic-accent-hover text-white text-xs font-semibold shadow-sm transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-all"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Portal Login</span>

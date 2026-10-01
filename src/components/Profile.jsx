@@ -257,6 +257,23 @@ function Profile({ token, user, onUserUpdate }) {
           )}
         </div>
 
+        {/* Support & Academic Records Inquiries */}
+        <div className="institutional-card p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h4 className="text-sm sm:text-base font-bold text-academic-navy">Academic Records or Marks Discrepancy?</h4>
+            <p className="text-xs text-academic-text-secondary mt-0.5">
+              For CIE evaluation reviews, proctor change requests, or profile corrections, contact department desk:
+            </p>
+          </div>
+          <a
+            href="mailto:cadence.platform@gmail.com"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-academic-navy hover:bg-academic-navy-light text-white text-xs font-semibold shadow-soft transition-colors font-mono shrink-0"
+          >
+            <Mail className="w-3.5 h-3.5 text-academic-gold-light" />
+            <span>cadence.platform@gmail.com</span>
+          </a>
+        </div>
+
     </div>
   );
 }

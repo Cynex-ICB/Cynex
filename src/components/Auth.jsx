@@ -216,7 +216,7 @@ function Auth({ onAuthenticated }) {
               Department of CSE (ICB)
             </h1>
             <p className="text-xs text-academic-text-muted">
-              CYNEX Academic &amp; Evaluation Portal
+              CADENCE Academic &amp; Evaluation Portal
             </p>
           </div>
         </div>
@@ -339,11 +339,20 @@ function Auth({ onAuthenticated }) {
         </div>
 
         {/* Institutional Security Notice */}
-        <div className="text-center text-[11px] text-academic-text-muted space-y-1">
+        <div className="text-center text-[11px] text-academic-text-muted space-y-1.5">
           <p className="flex items-center justify-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-academic-gold-dark" />
           </p>
           <p>Unauthorized access is strictly prohibited and logged under institutional IT policies.</p>
+          <p>
+            Need login assistance or account activation? Contact{" "}
+            <a
+              href="mailto:cadence.platform@gmail.com"
+              className="text-academic-accent hover:underline font-mono font-semibold"
+            >
+              cadence.platform@gmail.com
+            </a>
+          </p>
         </div>
 
       </div>

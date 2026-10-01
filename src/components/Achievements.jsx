@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
-import { Award, Trophy } from 'lucide-react';
+import { Award, Trophy, Mail } from 'lucide-react';
 import { API_BASE_URL, readApiJson, resolveApiAssetUrl } from "../utils/api.js";
 
 function Achievements({ token }) {
@@ -111,6 +111,23 @@ function Achievements({ token }) {
             </p>
           </div>
         )}
+      </section>
+
+      {/* Submission / Contact Desk */}
+      <section className="institutional-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 className="text-base font-bold text-academic-navy">Report an Achievement or Publication</h3>
+          <p className="text-xs sm:text-sm text-academic-text-secondary mt-1">
+            Students and faculty with recent awards, research papers, or hackathon achievements can submit records to:
+          </p>
+        </div>
+        <a
+          href="mailto:cadence.platform@gmail.com"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-academic-navy hover:bg-academic-navy-light text-white text-xs font-semibold shadow-soft transition-colors font-mono shrink-0"
+        >
+          <Mail className="w-4 h-4 text-academic-gold-light" />
+          <span>cadence.platform@gmail.com</span>
+        </a>
       </section>
     </div>
   );

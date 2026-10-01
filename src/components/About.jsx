@@ -2,11 +2,12 @@ import { Link } from 'react-router-dom';
 import {
   Compass,
   Target,
+  Mail,
 } from 'lucide-react';
 
 function About() {
   return (
-    <div className="space-y-12 py-10 px-4 sm:px-6 max-w-7xl mx-auto text-academic-text">
+    <div className="space-y-8 py-10 px-4 sm:px-6 max-w-7xl mx-auto text-academic-text">
       
       {/* 1. Introduction & Overview */}
       <section className="institutional-card p-6 sm:p-10">
@@ -14,7 +15,7 @@ function About() {
           <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-academic-gold-dark uppercase tracking-widest mb-2 font-mono">
             <span>Department Overview</span>
             <span>&bull;</span>
-            <span>Cynex</span>
+            <span>Cadence</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-academic-navy tracking-tight">
             Cultivating Engineering Rigor in Modern Computing Paradigms
@@ -48,7 +49,24 @@ function About() {
             </ul>
           </div>
         </div>
-       </section>
+      </section>
+
+      {/* Department Official Communications */}
+      <section className="institutional-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 className="text-base font-bold text-academic-navy">Department Communications Desk</h3>
+          <p className="text-xs sm:text-sm text-academic-text-secondary mt-1">
+            Official communications, admissions inquiries, and institutional correspondence:
+          </p>
+        </div>
+        <a
+          href="mailto:cadence.platform@gmail.com"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-academic-navy hover:bg-academic-navy-light text-white text-xs font-semibold shadow-soft transition-colors font-mono shrink-0"
+        >
+          <Mail className="w-4 h-4 text-academic-gold-light" />
+          <span>cadence.platform@gmail.com</span>
+        </a>
+      </section>
 
     </div>
   );

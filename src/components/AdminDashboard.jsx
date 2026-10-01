@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import CadenceLogo from './CadenceLogo.jsx';
 import { createPortal } from "react-dom";
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import {
@@ -19,7 +20,9 @@ import {
   Plus,
   Layers,
   FolderPlus,
+  Calendar,
 } from "lucide-react";
+import TimetableBuilderPage from "./TimetableBuilderPage.jsx";
 import { API_BASE_URL, downloadApiFile, readApiJson } from "../utils/api.js";
 
 const initialMaterialForm = {
@@ -162,6 +165,13 @@ function getRouteMetadata(pathname, isMasterAdmin) {
       description: "Assign faculty mentors to guide and counsel student cohorts.",
     };
   }
+  if (pathname.includes("/admin/timetables")) {
+    return {
+      title: "Timetable Builder",
+      eyebrow: "Curriculum Scheduling",
+      description: "Design, configure, and publish departmental class timetables and lab allocations.",
+    };
+  }
   if (pathname.includes("/admin/cie-overview")) {
     return {
       title: "CIE Marks Overview",
@@ -218,6 +228,14 @@ function AdminDashboard({ user, token, onLogout }) {
   const isMasterAdmin = user?.role === "master-admin";
   const defaultRoute = isMasterAdmin ? "subjects" : "academic";
   const routeMeta = getRouteMetadata(location.pathname, isMasterAdmin);
+  const isTimetablePage = location.pathname.includes("/admin/timetables");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => isTimetablePage);
+
+  useEffect(() => {
+    if (isTimetablePage) {
+      setIsSidebarCollapsed(true);
+    }
+  }, [isTimetablePage]);
 
   return (
     <main className="admin-page">
@@ -232,23 +250,46 @@ function AdminDashboard({ user, token, onLogout }) {
 
       <div className="admin-shell">
         <aside
-          className={`admin-sidebar ${isAdminSidebarOpen ? "show" : ""}`}
+          className={`admin-sidebar ${isAdminSidebarOpen ? "show" : ""} ${isSidebarCollapsed ? "collapsed" : ""}`}
           id="admin-sidebar"
         >
           <div className="admin-sidebar-header">
-            <Link
-              to="/admin"
-              onClick={closeAdminSidebar}
-              className="admin-brand-link"
-              title="Cynex Admin Portal"
-            >
-              <span className="text-2xl font-black tracking-tight text-white">
-                Cynex
-              </span>
-              <span className="admin-brand-badge">
-                {isMasterAdmin ? "Master" : "Admin"}
-              </span>
-            </Link>
+            {!isSidebarCollapsed ? (
+              <div className="flex items-center justify-between gap-2">
+                <Link
+                  to="/admin"
+                  onClick={closeAdminSidebar}
+                  className="admin-brand-link min-w-0 flex items-center gap-2"
+                  title="Cadence Admin Portal"
+                >
+                  <CadenceLogo size={30} />
+                  <span className="admin-brand-badge">
+                    {isMasterAdmin ? "Master" : "Admin"}
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarCollapsed(true)}
+                  className="hidden lg:flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                  title="Shrink sidebar"
+                  aria-label="Shrink sidebar"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center w-full py-0.5">
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarCollapsed(false)}
+                  className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all shadow-sm group"
+                  title="Expand menu"
+                  aria-label="Expand menu"
+                >
+                  <Menu className="w-5 h-5 text-academic-gold-light group-hover:scale-110 transition-transform" />
+                </button>
+              </div>
+            )}
           </div>
 
           <nav className="admin-dashboard-nav" aria-label="Admin dashboard">
@@ -256,11 +297,15 @@ function AdminDashboard({ user, token, onLogout }) {
               <>
                 <div className="admin-nav-group">
                   <span className="admin-nav-group-title">Curriculum</span>
-                  <NavLink to="/admin/subjects" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/subjects" title="Subject Declaration" onClick={closeAdminSidebar}>
                     <BookOpen className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>Subject Declaration</span>
                   </NavLink>
-                  <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/timetables" title="Timetable Builder" onClick={closeAdminSidebar}>
+                    <Calendar className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
+                    <span>Timetable Builder</span>
+                  </NavLink>
+                  <NavLink to="/admin/cie-overview" title="CIE Marks Overview" onClick={closeAdminSidebar}>
                     <BarChart3 className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>CIE Marks Overview</span>
                   </NavLink>
@@ -268,11 +313,11 @@ function AdminDashboard({ user, token, onLogout }) {
 
                 <div className="admin-nav-group">
                   <span className="admin-nav-group-title">Directory</span>
-                  <NavLink to="/admin/admins" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/admins" title="Teacher Admins" onClick={closeAdminSidebar}>
                     <ShieldCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>Teacher Admins</span>
                   </NavLink>
-                  <NavLink to="/admin/student-accounts" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/student-accounts" title="Student Accounts" onClick={closeAdminSidebar}>
                     <GraduationCap className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>Student Accounts</span>
                   </NavLink>
@@ -280,11 +325,11 @@ function AdminDashboard({ user, token, onLogout }) {
 
                 <div className="admin-nav-group">
                   <span className="admin-nav-group-title">Advisory</span>
-                  <NavLink to="/admin/coordinators" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/coordinators" title="Class Coordinators" onClick={closeAdminSidebar}>
                     <UserCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>Class Coordinators</span>
                   </NavLink>
-                  <NavLink to="/admin/mentors" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/mentors" title="Mentor Assignment" onClick={closeAdminSidebar}>
                     <Users className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>Mentor Assignment</span>
                   </NavLink>
@@ -294,15 +339,15 @@ function AdminDashboard({ user, token, onLogout }) {
               <>
                 <div className="admin-nav-group">
                   <span className="admin-nav-group-title">Content</span>
-                  <NavLink to="/admin/academic" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/academic" title="Academic Content" onClick={closeAdminSidebar}>
                     <BookOpen className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>Academic Content</span>
                   </NavLink>
-                  <NavLink to="/admin/activity-alerts" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/activity-alerts" title="Activity Alerts" onClick={closeAdminSidebar}>
                     <Bell className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>Activity Alerts</span>
                   </NavLink>
-                  <NavLink to="/admin/showcase" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/showcase" title="Showcase Pages" onClick={closeAdminSidebar}>
                     <Sparkles className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>Showcase Pages</span>
                   </NavLink>
@@ -310,15 +355,15 @@ function AdminDashboard({ user, token, onLogout }) {
 
                 <div className="admin-nav-group">
                   <span className="admin-nav-group-title">Evaluation</span>
-                  <NavLink to="/admin/cie-marks" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/cie-marks" title="CIE Marks" onClick={closeAdminSidebar}>
                     <FileSpreadsheet className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>CIE Marks</span>
                   </NavLink>
-                  <NavLink to="/admin/attendance" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/attendance" title="Attendance" onClick={closeAdminSidebar}>
                     <UserCheck className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>Attendance</span>
                   </NavLink>
-                  <NavLink to="/admin/cie-overview" onClick={closeAdminSidebar}>
+                  <NavLink to="/admin/cie-overview" title="CIE Marks Overview" onClick={closeAdminSidebar}>
                     <BarChart3 className="w-4 h-4 mr-2.5 opacity-80 flex-shrink-0" />
                     <span>CIE Marks Overview</span>
                   </NavLink>
@@ -355,14 +400,21 @@ function AdminDashboard({ user, token, onLogout }) {
           </div>
         </aside>
 
-        <div className="admin-content">
+        <div className={`admin-content ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
           <header className="admin-topbar">
             <div className="admin-topbar-left">
               <button
-                className="admin-mobile-toggle"
+                className="inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 transition-colors shadow-soft"
                 type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined" && window.innerWidth < 900) {
+                    setIsAdminSidebarOpen((prev) => !prev);
+                  } else {
+                    setIsSidebarCollapsed((prev) => !prev);
+                  }
+                }}
+                title={isSidebarCollapsed ? "Expand sidebar" : "Shrink sidebar"}
                 aria-label="Toggle navigation menu"
-                onClick={() => setIsAdminSidebarOpen((prev) => !prev)}
               >
                 <Menu className="w-5 h-5 text-slate-700" />
               </button>
@@ -400,6 +452,7 @@ function AdminDashboard({ user, token, onLogout }) {
               {isMasterAdmin ? (
                 <>
                   <Route path="subjects" element={<SubjectsPage token={token} />} />
+                  <Route path="timetables" element={<TimetableBuilderPage token={token} />} />
                   <Route path="admins" element={<TeacherAdminsPage token={token} currentUser={user} />} />
                   <Route path="student-accounts" element={<StudentAccountsPage token={token} currentUser={user} />} />
                   <Route path="coordinators" element={<CoordinatorAssignmentsPage token={token} />} />

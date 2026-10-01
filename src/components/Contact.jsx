@@ -8,6 +8,7 @@ function Contact() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
+    setFormState({ name: '', email: '', subject: '', message: '' });
   };
 
   return (
@@ -75,8 +76,8 @@ function Contact() {
                 <Mail className="w-4 h-4 text-academic-accent flex-shrink-0 mt-1" />
                 <div>
                   <strong className="text-academic-navy font-semibold block">Email Inquiries:</strong>
-                  <a href="mailto:cse-icb@aiet.org.in" className="text-academic-accent hover:underline font-mono">
-                    cse-icb@aiet.org.in
+                  <a href="mailto:cadence.platform@gmail.com" className="text-academic-accent hover:underline font-mono">
+                    cadence.platform@gmail.com
                   </a>
                 </div>
               </div>

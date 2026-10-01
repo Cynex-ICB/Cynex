@@ -7,7 +7,7 @@ import About from './components/About.jsx';
 import Faculty from './components/Faculty.jsx';
 import Achievements from './components/Achievements.jsx';
 import NewsEvents from './components/NewsEvents.jsx';
-import CynAI from './components/CynAI.jsx';
+import CadenceAI from './components/CadenceAI.jsx';
 import StudentPortal from './components/StudentPortal.jsx';
 import Materials from './components/Materials.jsx';
 import Marks from './components/Marks.jsx';
@@ -210,14 +210,14 @@ function App() {
               }
             />
 
-            {/* CynAI (Authenticated users only — not part of the public site) */}
+            {/* CadenceAI (Authenticated users only — not part of the public site) */}
             <Route
               path="/cynai"
               element={
                 isAuthenticated ? (
                   <PublicLayout user={authUser} onLogout={handleLogout} showFooter={false}>
                     <PageMotion keyProp={location.pathname}>
-                      <CynAI user={authUser} />
+                      <CadenceAI user={authUser} />
                     </PageMotion>
                   </PublicLayout>
                 ) : (
@@ -226,13 +226,13 @@ function App() {
                     replace
                     state={{
                       from: location,
-                      authMessage: 'Please sign in to chat with CynAI.',
+                      authMessage: 'Please sign in to chat with CadenceAI.',
                     }}
                   />
                 )
               }
             />
-            {/* Legacy path — redirects to CynAI */}
+            {/* Legacy path — redirects to CadenceAI */}
             <Route path="/study-companion" element={<Navigate to="/cynai" replace />} />
 
             {/* Faculty Directory */}
@@ -358,7 +358,7 @@ function App() {
                 ) : (
                   <PublicLayout user={authUser} onLogout={handleLogout}>
                     <PageMotion keyProp={location.pathname}>
-                      <Attendance token={authToken} />
+                      <Attendance token={authToken} user={authUser} />
                     </PageMotion>
                   </PublicLayout>
                 )

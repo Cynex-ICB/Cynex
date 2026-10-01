@@ -47,38 +47,38 @@ function Hero() {
             </div>
 
             <p className="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed font-normal">
-              Welcome to Cynex — a dedicated learning space focused on computing fundamentals, intelligent connected systems, cybersecurity defense, and modern engineering practices.
+              Welcome to Cadence — a dedicated learning space focused on computing fundamentals, intelligent connected systems, cybersecurity defense, and modern engineering practices.
             </p>
 
-            {/* 3 Core Pillar Badges */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 pb-1">
-              <div className="p-3 rounded-lg bg-academic-navy-light/70 border border-slate-700/80 flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0">
+            {/* 3 Core Engineering Pillars */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-blue-500/15 border border-blue-400/20 text-blue-400 flex items-center justify-center shrink-0">
                   <Cpu className="w-4 h-4" />
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-white leading-tight">Internet of Things</h4>
-                  <p className="text-[10px] text-slate-400">Embedded Systems &amp; Sensors</p>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-white leading-tight truncate">Internet of Things</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5 truncate">Sensors &amp; Embedded Systems</p>
                 </div>
               </div>
 
-              <div className="p-3 rounded-lg bg-academic-navy-light/70 border border-slate-700/80 flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded bg-emerald-500/20 text-emerald-300 flex items-center justify-center flex-shrink-0">
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-indigo-500/15 border border-indigo-400/20 text-indigo-400 flex items-center justify-center shrink-0">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-white leading-tight">Cyber Security</h4>
-                  <p className="text-[10px] text-slate-400">Network Defense &amp; VAPT</p>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-white leading-tight truncate">Cyber Security</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5 truncate">Defensive Ops &amp; VAPT</p>
                 </div>
               </div>
 
-              <div className="p-3 rounded-lg bg-academic-navy-light/70 border border-slate-700/80 flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded bg-purple-500/20 text-purple-300 flex items-center justify-center flex-shrink-0">
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-sky-500/15 border border-sky-400/20 text-sky-400 flex items-center justify-center shrink-0">
                   <Boxes className="w-4 h-4" />
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-white leading-tight">Blockchain Tech</h4>
-                  <p className="text-[10px] text-slate-400">Distributed Ledgers &amp; DApps</p>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-white leading-tight truncate">Blockchain Tech</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5 truncate">Smart Contracts &amp; Ledgers</p>
                 </div>
               </div>
             </div>
@@ -156,7 +156,7 @@ function Hero() {
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-white block font-semibold">Cynex Technical Community</strong>
+                    <strong className="text-white block font-semibold">Cadence Technical Community</strong>
                     <span className="text-slate-400 text-xs">Active technical activities, peer learning, hackathons, and collaborative projects.</span>
                   </div>
                 </div>

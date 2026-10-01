@@ -293,7 +293,7 @@ function mergeMessages(localMessages, serverMessages) {
   return [...serverMessages, ...pending];
 }
 
-function CynAI({ user }) {
+function CadenceAI({ user }) {
   const [conversations, setConversations] = useState(() => {
     const cached = loadCachedConversations();
     if (cached && cached.length > 0) {
@@ -313,7 +313,14 @@ function CynAI({ user }) {
     return cached && cached.length > 0 ? cached[0].id : null;
   });
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(() => {
+    try {
+      const q = new URLSearchParams(window.location.search).get("q");
+      return q ? decodeURIComponent(q) : "";
+    } catch {
+      return "";
+    }
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [thinkingStatus, setThinkingStatus] = useState(THINKING_STATUSES[0]);
@@ -700,7 +707,7 @@ function CynAI({ user }) {
           return messages;
         });
       } else {
-        const message = err?.message || "Unable to connect to CynAI.";
+        const message = err?.message || "Unable to connect to CadenceAI.";
         setError(message);
         updateActiveMessages((messages) => [
           ...messages,
@@ -748,7 +755,7 @@ function CynAI({ user }) {
   const handleShare = async () => {
     if (!activeConversation) return;
     const transcript = activeConversation.messages
-      .map((m) => `${m.role === "user" ? "Student" : "CynAI"}: ${m.content}`)
+      .map((m) => `${m.role === "user" ? "Student" : "CadenceAI"}: ${m.content}`)
       .join("\n\n");
     try {
       await navigator.clipboard.writeText(`${activeConversation.title}\n\n${transcript}`);
@@ -799,7 +806,7 @@ function CynAI({ user }) {
             className="px-2 text-xl font-bold tracking-tight text-academic-navy"
            
           >
-            CynAI
+            CadenceAI
           </h1>
           <p className="mt-1 flex items-center gap-1.5 px-2 text-[12px] text-academic-text-muted">
             <BookOpen className="h-3.5 w-3.5" />
@@ -1068,7 +1075,7 @@ function CynAI({ user }) {
                 </div>
               </div>
               <p className="mt-2 text-center text-[11px] leading-4 text-academic-text-muted">
-                CynAI is AI and can make mistakes. Please double-check exam-critical responses.
+                CadenceAI is AI and can make mistakes. Please double-check exam-critical responses.
               </p>
             </form>
           </div>
@@ -1078,4 +1085,4 @@ function CynAI({ user }) {
   );
 }
 
-export default CynAI;
+export default CadenceAI;
