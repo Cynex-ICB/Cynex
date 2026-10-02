@@ -113,23 +113,17 @@ function Profile({ token, user, onUserUpdate }) {
   }
 
   return (
-    <div className="py-12 px-4 sm:px-6 max-w-7xl mx-auto space-y-12 text-academic-text">
+    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-6 text-slate-900 font-sans">
       
-      {/* Header Banner */}
-      <section className="page-hero">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-academic-navy text-white text-xs font-mono font-semibold uppercase tracking-wider mb-3">
-            <GraduationCap className="w-3.5 h-3.5 text-academic-gold-light" />
-            <span>Academic Performance Record</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-academic-navy tracking-tight">
-            Student CIE Portal &amp; Academic Identity
-          </h1>
-          <p className="text-sm sm:text-base text-academic-text-secondary mt-2 leading-relaxed">
-            Continuous Internal Evaluation (CIE) test scores, attendance proctoring, class coordinator allocation, and student profile.
-          </p>
-        </div>
-      </section>
+      {/* Header */}
+      <div className="pb-5 border-b border-slate-200/80">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          Student Profile &amp; Records
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Official academic credentials, continuous internal assessment, and proctor assignments.
+        </p>
+      </div>
 
       {/* Account / Student Card */}
       <div className="institutional-card p-6 sm:p-8">

@@ -35,23 +35,17 @@ function Achievements({ token }) {
   }, [token]);
 
   return (
-    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-10 text-academic-text">
+    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-6 text-slate-900 font-sans">
       
-      {/* Header Banner */}
-      <section className="page-hero">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-academic-navy text-white text-xs font-mono font-semibold uppercase tracking-wider mb-3">
-            <Award className="w-3.5 h-3.5 text-academic-gold-light" />
-            <span>Honors &amp; Recognitions</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-academic-navy tracking-tight">
-            Student &amp; Department Achievements
-          </h1>
-          <p className="text-sm sm:text-base text-academic-text-secondary mt-2 leading-relaxed">
-            Celebrating technical excellence, hackathon victories, peer-reviewed research papers, and technical society initiatives in the Department of CSE (ICB).
-          </p>
-        </div>
-      </section>
+      {/* Header */}
+      <div className="pb-5 border-b border-slate-200/80">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          Student &amp; Department Achievements
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Honors, hackathon victories, research publications, and student recognitions in CSE.
+        </p>
+      </div>
 
       {error && (
         <div className="p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs">

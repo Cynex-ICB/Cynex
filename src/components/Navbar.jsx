@@ -32,7 +32,7 @@ const mainNavLinks = [
 const studentNavLinks = [
   { label: 'Dashboard', to: '/portal', icon: LayoutDashboard },
   { label: 'Study Materials', to: '/materials', icon: BookOpen },
-  { label: 'CyAI', to: '/cynai', icon: Brain },
+  { label: 'CadenceAI', to: '/cynai', icon: Brain },
   { label: 'Marks', to: '/marks', icon: Award },
   { label: 'Attendance', to: '/attendance', icon: UserCheck },
   { label: 'Profile', to: '/profile', icon: User },

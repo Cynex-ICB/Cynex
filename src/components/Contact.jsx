@@ -12,23 +12,17 @@ function Contact() {
   };
 
   return (
-    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-10 text-academic-text">
+    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-6 text-slate-900 font-sans">
       
-      {/* Header Banner */}
-      <section className="page-hero">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-academic-navy text-white text-xs font-mono font-semibold uppercase tracking-wider mb-3">
-            <Building2 className="w-3.5 h-3.5 text-academic-gold-light" />
-            <span>Institutional Contact</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-academic-navy tracking-tight">
-            Contact Department Office
-          </h1>
-          <p className="text-sm sm:text-base text-academic-text-secondary mt-2 leading-relaxed">
-            Reach out to the Department of Computer Science &amp; Engineering (IoT, Cyber Security including Blockchain Technology) at Alva&apos;s Institute of Engineering &amp; Technology.
-          </p>
-        </div>
-      </section>
+      {/* Header */}
+      <div className="pb-5 border-b border-slate-200/80">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          Contact Department Office
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Department location, official communications, and academic inquiry office.
+        </p>
+      </div>
 
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
          

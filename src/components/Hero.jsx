@@ -35,8 +35,8 @@ function Hero() {
           {/* Left Column: Department Identity & Actions */}
           <div className="lg:col-span-7 space-y-6 text-left">
             <div className="space-y-2">
-              <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-academic-gold-light font-mono">
-                Innovate &bull; Compute &bull; Build
+              <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-blue-300">
+                Undergraduate Engineering Program
               </p>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-white tracking-tight leading-[1.12]">
                 Department of CSE

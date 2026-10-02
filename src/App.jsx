@@ -234,6 +234,8 @@ function App() {
             />
             {/* Legacy path — redirects to CadenceAI */}
             <Route path="/study-companion" element={<Navigate to="/cynai" replace />} />
+            <Route path="/cyai" element={<Navigate to="/cynai" replace />} />
+            <Route path="/cadenceai" element={<Navigate to="/cynai" replace />} />
 
             {/* Faculty Directory */}
           <Route

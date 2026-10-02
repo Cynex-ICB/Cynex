@@ -103,23 +103,26 @@ function Materials({ token, user }) {
   );
 
   return (
-    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-10 text-academic-text">
+    <div className="py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-6 text-slate-900 font-sans">
       
-      {/* Header Banner */}
-      <section className="page-hero">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-academic-navy text-white text-xs font-mono font-semibold uppercase tracking-wider mb-3">
-            <BookOpen className="w-3.5 h-3.5 text-academic-gold-light" />
-            <span>Academic Curriculum Repository</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-academic-navy tracking-tight">
-            Study Materials, Syllabus &amp; Lab Manuals
+      {/* Header */}
+      <div className="pb-5 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            Study Materials &amp; Syllabus
           </h1>
-          <p className="text-sm sm:text-base text-academic-text-secondary mt-2 leading-relaxed">
-            Authorized VTU CBCS syllabus copies, lecture courseware, assignment problems, and laboratory procedure manuals for Department of CSE (ICB).
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            VTU syllabus copies, lecture courseware, assignment problems, and laboratory manuals.
           </p>
         </div>
-      </section>
+
+        {!isAdmin && (
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200/80 text-xs font-medium text-slate-700 shadow-xs">
+            <span className="text-slate-500">Enrolled Semester:</span>
+            <strong className="text-slate-900 font-bold">Semester {studentSemester}</strong>
+          </div>
+        )}
+      </div>
 
       {/* Semester Controls */}
       <div className="institutional-card p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
